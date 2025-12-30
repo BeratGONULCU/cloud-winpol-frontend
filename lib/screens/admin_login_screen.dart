@@ -1,3 +1,4 @@
+import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/utils/show_pop.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/buttons/app_button.dart';
@@ -8,6 +9,7 @@ import 'package:cloud_winpol_frontend/widgets/buttons/app_button.dart';
 import 'package:cloud_winpol_frontend/widgets/text/app_text_field.dart';
 import 'package:cloud_winpol_frontend/services/login_service.dart';
 import 'package:cloud_winpol_frontend/utils/show_pop.dart';
+import 'package:cloud_winpol_frontend/services/auth_storage.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   static const String routeName = '/adminLogin';
@@ -70,11 +72,15 @@ class _LoginScreenState extends State<AdminLoginScreen> {
       if (result.containsKey("access_token") &&
           result["access_token"] != null &&
           result["access_token"].toString().isNotEmpty) {
+        final token = result["access_token"].toString();
+
+        // TOKEN'I KAYDET
+        await AuthStorage.saveToken(token);
+        print("TOKEN SAVED: $token");
+
         showPop(context, "Giriş başarılı", PopType.success);
 
-        // TODO:
-        // token'ı sakla
-        // navigate et
+        // TODO: navigate et
       } else if (result.containsKey("error")) {
         if (result["error"] == "wrong_password") {
           showPop(context, "Kullanıcı adı veya şifre hatalı", PopType.error);
@@ -90,12 +96,15 @@ class _LoginScreenState extends State<AdminLoginScreen> {
       }
     } catch (e) {
       print("LOGIN ERROR: $e");
-      showPop(context, "Sunucuya bağlanılamadı", PopType.error);
+      showPop(
+        context,
+        "Sunucuya bağlanılamadı ya da internet bağlantısı yok",
+        PopType.error,
+      );
     }
   }
 
   Future<bool> _onBackPressed() async {
-
     return await _showExitConfirmDialog();
 
     // aktif bir kayıt yok → direkt çık
@@ -112,12 +121,9 @@ class _LoginScreenState extends State<AdminLoginScreen> {
       backgroundColor: AppColors.body,
 
       appBar: WinpolHeader(
-        title: "Winpol Yönlendirme",
-        onBack: () async {
-          if (await _onBackPressed()) {
-            Navigator.pop(context);
-          }
-        },
+        onBack: () => Navigator.pop(context),
+        onSettings: () {},
+        showLogo: true,
       ),
 
       body: Center(

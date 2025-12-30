@@ -114,11 +114,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
       }
     } catch (e) {
       print("LOGIN ERROR: $e");
-      showPop(
-        context,
-        "Sunucuya bağlanılamadı ya da internet bağlantısı yok",
-        PopType.error,
-      );
+      showPop(context, "Sunucuya bağlanılamadı ya da internet bağlantısı yok", PopType.error);
     }
   }
 
@@ -126,7 +122,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.body,
-
+      
       appBar: WinpolHeader(
         title: "Winpol",
         onBack: () async {
@@ -144,18 +140,29 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
           alignment: Alignment.center,
           children: [
             // ARKA IŞIK (GLOW)
+            Container(
+              width: 400,
+              height: 400,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(124),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.35),
+                    blurRadius: 55,
+                    spreadRadius: 16,
+                    offset: const Offset(0, 20),
+                  ),
+                ],
+              ),
+            ),
 
             // CARD (RENKSİZ / TEMİZ)
             Container(
               width: 360,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
               decoration: BoxDecoration(
-                color: AppColors.card,
+                color: AppColors.card, // SADECE kendi rengi
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.black.withAlpha(20),
-                  width: 0.8,
-                ),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -170,7 +177,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                     controller: _vergiNoController,
                     onSubmit: _handleLogin,
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: 18),
                   AppTextField(
                     label: 'Email',
                     controller: _identifierController,
@@ -184,7 +191,15 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                     onSubmit: _handleLogin,
                   ),
                   const SizedBox(height: 32),
-                  AppButton(title: 'GİRİŞ YAP', onTap: _handleLogin),
+                  AppButton(
+                    title: 'GİRİŞ YAP',
+                    onTap: () {
+                      final vergiNo = _vergiNoController.text.trim();
+                      final identifier = _identifierController.text.trim();
+                      final password = _passwordController.text.trim();
+                      _handleLogin();
+                    },
+                  ),
                 ],
               ),
             ),
@@ -194,3 +209,4 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
     );
   }
 }
+

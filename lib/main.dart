@@ -1,4 +1,6 @@
 import 'package:cloud_winpol_frontend/screens/customer_login_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/screens/admin_login_screen.dart';
 import 'package:cloud_winpol_frontend/screens/main_router_screen.dart';
@@ -20,7 +22,8 @@ class WinpolApp extends StatelessWidget {
         '/router': (_) => const MainRouterScreen(),
         '/adminLogin': (_) => const AdminLoginScreen(),
         '/customerLogin': (_) => const CustomerLoginScreen(),
-
+        '/customerMain': (_) => const CustomerMainScreen(),
+        '/settings': (_) => const SettingsScreen(),
       },
     );
   }

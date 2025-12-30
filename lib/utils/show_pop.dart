@@ -1,17 +1,8 @@
 import 'package:flutter/material.dart';
 
-enum PopType {
-  success,
-  error,
-  warning,
-  info,
-}
+enum PopType { success, error, warning, info }
 
-void showPop(
-  BuildContext context,
-  String message,
-  PopType type,
-) {
+void showPop(BuildContext context, String message, PopType type) {
   Color color;
   IconData icon;
   String title;
@@ -43,7 +34,7 @@ void showPop(
     context: context,
     barrierDismissible: true,
     barrierLabel: "Popup",
-    barrierColor: Colors.black.withOpacity(0.45),
+    barrierColor: Colors.black.withAlpha(120),
     transitionDuration: const Duration(milliseconds: 250),
     pageBuilder: (_, __, ___) {
       return Center(
@@ -57,10 +48,9 @@ void showPop(
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.25),
-                  blurRadius: 40,
-                  spreadRadius: 4,
-                  offset: const Offset(0, 16),
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 30,
+                  offset: const Offset(0, 18),
                 ),
               ],
             ),
@@ -69,17 +59,13 @@ void showPop(
               children: [
                 // ICON
                 Container(
-                  width: 64,
-                  height: 64,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
+                    color: color.withAlpha(25),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: 36,
-                  ),
+                  child: Icon(icon, color: color, size: 28),
                 ),
 
                 const SizedBox(height: 20),
@@ -99,10 +85,7 @@ void showPop(
                 Text(
                   message,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    color: Colors.black87,
-                  ),
+                  style: const TextStyle(fontSize: 15, color: Colors.black87),
                 ),
 
                 const SizedBox(height: 28),
@@ -140,10 +123,7 @@ void showPop(
         opacity: animation,
         child: ScaleTransition(
           scale: Tween(begin: 0.92, end: 1.0).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutBack,
-            ),
+            CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
           ),
           child: child,
         ),

@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:cloud_winpol_frontend/services/api_client.dart';
+import 'package:cloud_winpol_frontend/services/auth_storage.dart';
 import 'package:http/http.dart' as http;
 
 class CustomerLoginService {
@@ -42,5 +44,17 @@ class CustomerLoginService {
     }
 
     throw Exception("Login failed ${response.statusCode}: ${response.body}");
+  }
+
+  static Future<Map<String, dynamic>> sessionControl() async {
+    final url = Uri.parse("$baseUrl/tenant/tenant-info");
+
+    final response = await ApiClient.get(url);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    throw Exception("Session control failed");
   }
 }

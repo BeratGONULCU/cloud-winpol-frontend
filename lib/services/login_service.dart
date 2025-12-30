@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:cloud_winpol_frontend/services/api_client.dart';
+import 'package:cloud_winpol_frontend/services/auth_storage.dart';
 import 'package:http/http.dart' as http;
 
 class LoginService {
@@ -11,12 +13,9 @@ class LoginService {
   ) async {
     print("LOGIN SERVICE START");
 
-    final url = Uri.parse("$baseUrl/admin/login").replace(
-      queryParameters: {
-        "email": identifier,
-        "password": password,
-      },
-    );
+    final url = Uri.parse(
+      "$baseUrl/admin/login",
+    ).replace(queryParameters: {"email": identifier, "password": password});
 
     print("LOGIN URL: $url");
 
@@ -27,7 +26,7 @@ class LoginService {
         "Accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: "", 
+      body: "",
     );
 
     print("LOGIN STATUS: ${response.statusCode}");
@@ -42,5 +41,17 @@ class LoginService {
     }
 
     throw Exception("Unexpected response");
+  }
+
+  static Future<Map<String, dynamic>> sessionControl() async {
+    final url = Uri.parse("$baseUrl/tenant/tenant-info");
+
+    final response = await ApiClient.get(url);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    throw Exception("Session control failed");
   }
 }

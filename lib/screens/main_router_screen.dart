@@ -36,7 +36,7 @@ class _MainRouterScreenState extends State<MainRouterScreen> {
 
             RouterCard(
               title: 'Müşteri Yönetim Paneli',
-              subtitle: 'İş emirleri ve girişler',
+              subtitle: 'Şirket içi eylemler',
               onTap: () {
                 Navigator.pushNamed(context, '/customerLogin');
               },

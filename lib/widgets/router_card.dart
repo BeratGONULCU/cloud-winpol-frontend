@@ -38,11 +38,9 @@ class _RouterCardState extends State<RouterCard> {
             color: AppColors.card,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
-              // arkadan ışık hissi 
+              // arkadan ışık hissi
               BoxShadow(
-                color: AppColors.primary.withOpacity(
-                  _isHover ? 0.95 : 0.20,
-                ),
+                color: AppColors.primary.withOpacity(_isHover ? 0.95 : 0.20),
                 blurRadius: _isHover ? 150 : 84,
                 spreadRadius: -8,
                 offset: const Offset(0, 12),
@@ -51,7 +49,8 @@ class _RouterCardState extends State<RouterCard> {
           ),
           child: Center(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
@@ -63,7 +62,7 @@ class _RouterCardState extends State<RouterCard> {
                         ? AppColors.primary
                         : AppColors.primary.withOpacity(0.85),
                   ),
-                  child: Text(widget.title),
+                  child: Text(widget.title, textAlign: TextAlign.center),
                 ),
                 const SizedBox(height: 6),
                 AnimatedDefaultTextStyle(
@@ -76,7 +75,7 @@ class _RouterCardState extends State<RouterCard> {
                         ? AppColors.primary.withOpacity(0.85)
                         : AppColors.primary.withOpacity(0.7),
                   ),
-                  child: Text(widget.subtitle),
+                  child: Text(widget.subtitle, textAlign: TextAlign.center),
                 ),
               ],
             ),

@@ -6,7 +6,7 @@ import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
 class WinpolHeader extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onBack;
   final VoidCallback? onSettings;
-
+  final VoidCallback? onMenu;
   final String? title;
   final bool showLogo;
 
@@ -14,6 +14,7 @@ class WinpolHeader extends StatefulWidget implements PreferredSizeWidget {
     super.key,
     required this.onBack,
     this.onSettings,
+    this.onMenu,
     this.title,
     this.showLogo = false,
   });
@@ -119,14 +120,17 @@ class _WinpolHeaderState extends State<WinpolHeader> {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              if (widget.onBack != null)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: _circleIcon(
-                    icon: Icons.arrow_back_ios_new,
-                    onTap: widget.onBack!,
-                  ),
-                ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: widget.onMenu != null
+                    ? _circleIcon(icon: Icons.menu, onTap: widget.onMenu!)
+                    : widget.onBack != null
+                    ? _circleIcon(
+                        icon: Icons.arrow_back_ios_new,
+                        onTap: widget.onBack!,
+                      )
+                    : const SizedBox.shrink(),
+              ),
 
               Center(
                 child: widget.showLogo
@@ -158,11 +162,14 @@ class _WinpolHeaderState extends State<WinpolHeader> {
         ),
 
         // İNCE AYIRICI ÇİZGİ (APPLE STYLE)
+        /*
         Divider(
-          height: 1.5,
+          height: 0,
           thickness: 0.5,
-          color: AppColors.primary.withAlpha(175),
+          //color: AppColors.primary.withAlpha(175),
+          color: const Color.fromARGB(255, 255, 255, 255),
         ),
+        */
       ],
     );
   }

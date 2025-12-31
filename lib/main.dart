@@ -1,5 +1,6 @@
 import 'package:cloud_winpol_frontend/screens/customer_login_screen.dart';
 import 'package:cloud_winpol_frontend/screens/customer_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/web/customer_main_web.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/screens/admin_login_screen.dart';

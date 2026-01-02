@@ -1,3 +1,4 @@
+import 'package:cloud_winpol_frontend/screens/admin_main_screen.dart';
 import 'package:cloud_winpol_frontend/screens/customer_login_screen.dart';
 import 'package:cloud_winpol_frontend/screens/customer_main_screen.dart';
 import 'package:cloud_winpol_frontend/screens/web/customer_main_web.dart';
@@ -25,6 +26,7 @@ class WinpolApp extends StatelessWidget {
         '/customerLogin': (_) => const CustomerLoginScreen(),
         '/customerMain': (_) => const CustomerMainScreen(),
         '/settings': (_) => const SettingsScreen(),
+        '/adminMain': (_) => const AdminMainScreen(),
       },
     );
   }

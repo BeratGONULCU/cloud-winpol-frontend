@@ -1,4 +1,4 @@
-import 'package:cloud_winpol_frontend/widgets/navigation/app_draver.dart';
+import 'package:cloud_winpol_frontend/widgets/navigation/web_app_draver.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';

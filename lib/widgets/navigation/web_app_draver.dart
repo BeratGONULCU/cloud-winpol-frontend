@@ -55,6 +55,8 @@ class AppDrawer extends StatelessWidget {
               children: [
                 DrawerItem(title: "Kullanıcılar"),
                 DrawerItem(title: "Yetkiler"),
+                DrawerItem(title: "İzinler"),
+                DrawerItem(title: "Kullanıcı - Yetki ilişkilendirme"),
                 DrawerItem(title: "Şubeler"),
                 DrawerItem(title: "Mikro API"),
               ],
@@ -128,8 +130,9 @@ class _DrawerSectionState extends State<DrawerSection> {
         ),
         AnimatedCrossFade(
           duration: const Duration(milliseconds: 180),
-          crossFadeState:
-              _expanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+          crossFadeState: _expanded
+              ? CrossFadeState.showFirst
+              : CrossFadeState.showSecond,
           firstChild: Column(children: widget.children),
           secondChild: const SizedBox.shrink(),
         ),
@@ -142,11 +145,7 @@ class DrawerItem extends StatelessWidget {
   final String title;
   final VoidCallback? onTap;
 
-  const DrawerItem({
-    super.key,
-    required this.title,
-    this.onTap,
-  });
+  const DrawerItem({super.key, required this.title, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +154,8 @@ class DrawerItem extends StatelessWidget {
       child: ListTile(
         dense: true,
         title: Text(title),
-        onTap: onTap ??
+        onTap:
+            onTap ??
             () {
               Navigator.pop(context); // drawer kapansın
             },

@@ -1,30 +1,31 @@
-import 'package:cloud_winpol_frontend/widgets/navigation/web_app_draver.dart';
+import 'package:cloud_winpol_frontend/widgets/navigation/admin_app_draver.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
 import 'dart:ui';
 
-class CustomerMainMobileScreen extends StatefulWidget {
-  static const String routeName = '/customerMain';
-  const CustomerMainMobileScreen({super.key});
+class AdminMainWebScreen extends StatefulWidget {
+  static const String routeName = '/adminMain';
+  const AdminMainWebScreen({super.key});
 
   @override
-  State<CustomerMainMobileScreen> createState() =>
-      _CustomerMainMobileScreenState();
+  State<AdminMainWebScreen> createState() => _AdminMainWebScreenState();
 }
 
-class _CustomerMainMobileScreenState extends State<CustomerMainMobileScreen> {
-  int _selectedIndex = 0;
+class _AdminMainWebScreenState extends State<AdminMainWebScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  int _selectedIndex = 0;
 
   final List<_AdminTab> _tabs = const [
-    _AdminTab("Kullanıcı İşlemleri", Icons.people, UsersPanel()),
-    _AdminTab("Yetki Tablosu", Icons.security, RolesPanel()),
-    _AdminTab("İzinler", Icons.lock, PermissionsPanel()),
-    _AdminTab("Yetkilendirme", Icons.rule, RolePermissionsPanel()),
-    _AdminTab("Şubeler", Icons.account_tree, BranchesPanel()),
-    _AdminTab("Mikro API", Icons.api, MikroApiPanel()),
+    _AdminTab("Müşteriler", Icons.people, CustomerPanel()),
+    _AdminTab("Lisanslar", Icons.security, LicencePanel()),
+    _AdminTab("Mikro API", Icons.account_tree, MikroApiPanel()),
+    _AdminTab(
+      "Ayarlar",
+      Icons.settings_accessibility_outlined,
+      SettingsPanel(),
+    ),
   ];
 
   Future<bool> _onBackPressed() async {
@@ -33,51 +34,55 @@ class _CustomerMainMobileScreenState extends State<CustomerMainMobileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Builder(
-      builder: (context) {
-        return Scaffold(
-          key: _scaffoldKey,
-          backgroundColor: const Color(0xFFF5F6F8),
-          drawer: const AppDrawer(),
-          appBar: WinpolHeader(
-            title: "",
-            showLogo: false,
-            onBack: null,
-            onMenu: () {
-              _scaffoldKey.currentState?.openDrawer();
-            },
-            onSettings: () {
-              Navigator.pushNamed(context, SettingsScreen.routeName);
-            },
-          ),
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: const Color(0xFFF5F6F8),
+      drawer: const AdminAppDrawer(),
+      appBar: WinpolHeader(
+        title: "",
+        showLogo: false,
+        onBack: null,
+        onMenu: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
+        onSettings: () {
+          Navigator.pushNamed(context, SettingsScreen.routeName);
+        },
+      ),
 
-          body: Column(
-            children: [
-              // PANEL ALANI
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: Padding(
-                    key: ValueKey(_selectedIndex),
-                    padding: const EdgeInsets.all(16),
-                    child: _tabs[_selectedIndex].widget,
+      body: Column(
+        children: [
+          _AdminToolbar(
+            tabs: _tabs,
+            selectedIndex: _selectedIndex,
+            onSelect: (i) => setState(() => _selectedIndex = i),
+          ),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 0.05),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
                   ),
-                ),
+                );
+              },
+              child: Padding(
+                key: ValueKey(_selectedIndex),
+                padding: const EdgeInsets.all(16),
+                child: _tabs[_selectedIndex].widget,
               ),
-
-              // ADMIN TOOLBAR 
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _AdminToolbar(
-                  tabs: _tabs,
-                  selectedIndex: _selectedIndex,
-                  onSelect: (i) => setState(() => _selectedIndex = i),
-                ),
-              ),
-            ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
@@ -103,7 +108,7 @@ class _AdminToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
 
-    final isCompact = width < 600; // telefon breakpoint
+    final isCompact = width < 600; // 📱 telefon breakpoint
     final isScrollable = width < 900;
 
     final content = Row(
@@ -258,23 +263,21 @@ class _PanelContainer extends StatelessWidget {
 // =======================
 //
 
-class UsersPanel extends StatelessWidget {
-  const UsersPanel({super.key});
+class CustomerPanel extends StatelessWidget {
+  const CustomerPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
     return _PanelContainer(
-      title: "Kullanıcı İşlemleri",
+      title: "Müşteri İşlemleri",
       child: Center(
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _MinimalTextBox(hint: "Kullanıcı Adı"),
+              _MinimalTextBox(hint: "Cari Adı"),
               const SizedBox(height: 12),
-              _MinimalTextBox(hint: "E-Posta"),
-              const SizedBox(height: 12),
-              _MinimalTextBox(hint: "Şifre"),
+              _MinimalTextBox(hint: "Vergi No"),
             ],
           ),
         ),
@@ -283,16 +286,16 @@ class UsersPanel extends StatelessWidget {
   }
 }
 
-class RolesPanel extends StatelessWidget {
-  const RolesPanel({super.key});
+class LicencePanel extends StatelessWidget {
+  const LicencePanel({super.key});
 
   @override
   Widget build(BuildContext context) {
     return _PanelContainer(
-      title: "Yetkiler",
+      title: "lisanslar",
       child: Center(
         child: Text(
-          "Roles CRUD\nADMIN / SUPERVISOR / WORKER",
+          "Lisans CRUD\nADMIN / SUPERVISOR / WORKER",
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 14,
@@ -349,16 +352,16 @@ class RolePermissionsPanel extends StatelessWidget {
   }
 }
 
-class BranchesPanel extends StatelessWidget {
-  const BranchesPanel({super.key});
+class MikroApiPanel extends StatelessWidget {
+  const MikroApiPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
     return _PanelContainer(
-      title: "Şubeler",
+      title: "Mikro API Ayarlar",
       child: Center(
         child: Text(
-          "Şube yönetimi\nAdres / İletişim / MERSİS",
+          "Mikro API credentials\n• api_key\n• firma_no\n• sube_no\n(masked)",
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 14,
@@ -371,16 +374,16 @@ class BranchesPanel extends StatelessWidget {
   }
 }
 
-class MikroApiPanel extends StatelessWidget {
-  const MikroApiPanel({super.key});
+class SettingsPanel extends StatelessWidget {
+  const SettingsPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
     return _PanelContainer(
-      title: "Mikro API Ayarlar",
+      title: "Ayarlar",
       child: Center(
         child: Text(
-          "Mikro API credentials\n• api_key\n• firma_no\n• sube_no\n(masked)",
+          "Ayarlar\nAdres / İletişim / MERSİS",
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 14,

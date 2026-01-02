@@ -1,0 +1,4 @@
+enum CustomerAction {
+  create,
+  edit,
+}

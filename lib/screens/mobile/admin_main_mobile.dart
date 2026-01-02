@@ -1,30 +1,37 @@
-import 'package:cloud_winpol_frontend/widgets/navigation/web_app_draver.dart';
+import 'package:cloud_winpol_frontend/models/customer_action.dart';
+import 'package:cloud_winpol_frontend/widgets/navigation/admin_app_draver.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
+import 'package:cloud_winpol_frontend/widgets/buttons/panelActionBar.dart';
+import 'package:cloud_winpol_frontend/service/company_service.dart';
+import 'package:cloud_winpol_frontend/widgets/buttons/submit_button.dart';
 import 'dart:ui';
 
-class CustomerMainMobileScreen extends StatefulWidget {
-  static const String routeName = '/customerMain';
-  const CustomerMainMobileScreen({super.key});
+import 'package:flutter/services.dart';
+
+class AdminMainMobileScreen extends StatefulWidget {
+  static const String routeName = '/adminMain';
+  const AdminMainMobileScreen({super.key});
 
   @override
-  State<CustomerMainMobileScreen> createState() =>
-      _CustomerMainMobileScreenState();
+  State<AdminMainMobileScreen> createState() => _AdminMainMobileScreenState();
 }
 
-class _CustomerMainMobileScreenState extends State<CustomerMainMobileScreen> {
+class _AdminMainMobileScreenState extends State<AdminMainMobileScreen> {
   int _selectedIndex = 0;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final List<_AdminTab> _tabs = const [
-    _AdminTab("Kullanıcı İşlemleri", Icons.people, UsersPanel()),
-    _AdminTab("Yetki Tablosu", Icons.security, RolesPanel()),
-    _AdminTab("İzinler", Icons.lock, PermissionsPanel()),
-    _AdminTab("Yetkilendirme", Icons.rule, RolePermissionsPanel()),
-    _AdminTab("Şubeler", Icons.account_tree, BranchesPanel()),
-    _AdminTab("Mikro API", Icons.api, MikroApiPanel()),
+    _AdminTab("Müşteriler", Icons.people, CustomerPanel()),
+    _AdminTab("Lisanslar", Icons.security, LicencePanel()),
+    _AdminTab("Mikro API", Icons.account_tree, MikroApiPanel()),
+    _AdminTab(
+      "Ayarlar",
+      Icons.settings_accessibility_outlined,
+      SettingsPanel(),
+    ),
   ];
 
   Future<bool> _onBackPressed() async {
@@ -38,7 +45,7 @@ class _CustomerMainMobileScreenState extends State<CustomerMainMobileScreen> {
         return Scaffold(
           key: _scaffoldKey,
           backgroundColor: const Color(0xFFF5F6F8),
-          drawer: const AppDrawer(),
+          drawer: const AdminAppDrawer(),
           appBar: WinpolHeader(
             title: "",
             showLogo: false,
@@ -65,7 +72,7 @@ class _CustomerMainMobileScreenState extends State<CustomerMainMobileScreen> {
                 ),
               ),
 
-              // ADMIN TOOLBAR 
+              // ADMIN TOOLBAR
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _AdminToolbar(
@@ -257,42 +264,134 @@ class _PanelContainer extends StatelessWidget {
 // PANELS (PLACEHOLDERS)
 // =======================
 //
+class CustomerPanel extends StatefulWidget {
+  const CustomerPanel({super.key});
 
-class UsersPanel extends StatelessWidget {
-  const UsersPanel({super.key});
+  @override
+  State<CustomerPanel> createState() => _CustomerPanelState();
+}
+
+class _CustomerPanelState extends State<CustomerPanel> {
+  CustomerAction action = CustomerAction.create;
+
+  final _taxNoController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _companyCodeController = TextEditingController();
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _submitCreate() {
+    final taxNo = _taxNoController.text.trim();
+    final name = _nameController.text.trim();
+    final companyCode = _companyCodeController.text.trim();
+
+    if (taxNo.length != 10) {
+      _showError("Vergi No 10 haneli olmalıdır");
+      return;
+    }
+
+    if (name.isEmpty) {
+      _showError("Cari adı boş olamaz");
+      return;
+    }
+
+    CompanyService.createCustomer(
+      vergiNo: taxNo,
+      cariAdi: name,
+      companyCode: companyCode,
+    );
+  }
+
+  @override
+  void dispose() {
+    _taxNoController.dispose();
+    _nameController.dispose();
+    _companyCodeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return _PanelContainer(
-      title: "Kullanıcı İşlemleri",
-      child: Center(
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _MinimalTextBox(hint: "Kullanıcı Adı"),
-              const SizedBox(height: 12),
-              _MinimalTextBox(hint: "E-Posta"),
-              const SizedBox(height: 12),
-              _MinimalTextBox(hint: "Şifre"),
-            ],
+      title: "Müşteri İşlemleri",
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // EKLE / DÜZENLE BUTTON BAR
+          CustomerActionBar(
+            selected: action,
+            onChanged: (a) => setState(() => action = a),
           ),
-        ),
+
+          const SizedBox(height: 18),
+
+          // FORM ALANI
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: _buildForm(),
+          ),
+        ],
       ),
     );
   }
+
+  Widget _buildForm() {
+    switch (action) {
+      case CustomerAction.create:
+        return Column(
+          key: const ValueKey("create"),
+          children: [
+            _MinimalTextBox(
+              hint: "Vergi No",
+              controller: _taxNoController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _MinimalTextBox(hint: "Cari Adı", controller: _nameController),
+            const SizedBox(height: 12),
+            _MinimalTextBox(
+              hint: "Şirket Kodu",
+              controller: _companyCodeController,
+            ),
+            const SizedBox(height: 20),
+
+            SubmitButton(label: "Müşteri Oluştur", onPressed: _submitCreate),
+          ],
+        );
+
+      case CustomerAction.edit:
+        return Column(
+          key: const ValueKey("edit"),
+          children: const [
+            //_MinimalTextBox(hint: "Müşteri Cari No"),
+            SizedBox(height: 12),
+            //_MinimalTextBox(hint: "Yeni Cari Adı"),
+            SizedBox(height: 12),
+            //_MinimalTextBox(hint: "Yeni Vergi No"),
+          ],
+        );
+    }
+  }
 }
 
-class RolesPanel extends StatelessWidget {
-  const RolesPanel({super.key});
+class LicencePanel extends StatelessWidget {
+  const LicencePanel({super.key});
 
   @override
   Widget build(BuildContext context) {
     return _PanelContainer(
-      title: "Yetkiler",
+      title: "lisanslar",
       child: Center(
         child: Text(
-          "Roles CRUD\nADMIN / SUPERVISOR / WORKER",
+          "Lisans CRUD\nADMIN / SUPERVISOR / WORKER",
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 14,
@@ -349,28 +448,6 @@ class RolePermissionsPanel extends StatelessWidget {
   }
 }
 
-class BranchesPanel extends StatelessWidget {
-  const BranchesPanel({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return _PanelContainer(
-      title: "Şubeler",
-      child: Center(
-        child: Text(
-          "Şube yönetimi\nAdres / İletişim / MERSİS",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            height: 1.5,
-            color: Colors.black.withAlpha(150),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class MikroApiPanel extends StatelessWidget {
   const MikroApiPanel({super.key});
 
@@ -393,16 +470,49 @@ class MikroApiPanel extends StatelessWidget {
   }
 }
 
+class SettingsPanel extends StatelessWidget {
+  const SettingsPanel({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _PanelContainer(
+      title: "Ayarlar",
+      child: Center(
+        child: Text(
+          "Ayarlar\nAdres / İletişim / MERSİS",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 14,
+            height: 1.5,
+            color: Colors.black.withAlpha(150),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _MinimalTextBox extends StatelessWidget {
   final String hint;
+  final TextEditingController controller;
+  final List<TextInputFormatter>? inputFormatters;
+  final TextInputType? keyboardType;
 
-  const _MinimalTextBox({required this.hint});
+  const _MinimalTextBox({
+    required this.hint,
+    required this.controller,
+    this.inputFormatters,
+    this.keyboardType,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 280,
       child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
         style: const TextStyle(fontSize: 14),
         decoration: InputDecoration(
           hintText: hint,

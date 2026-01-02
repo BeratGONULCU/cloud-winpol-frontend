@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'package:cloud_winpol_frontend/services/api_client.dart';
-import 'package:cloud_winpol_frontend/services/auth_storage.dart';
+import 'package:cloud_winpol_frontend/service/api_client.dart';
+import 'package:cloud_winpol_frontend/service/auth_storage.dart';
 import 'package:http/http.dart' as http;
 
 class CustomerLoginService {
-  static const String baseUrl = "http://192.168.1.36:8000";
+  static const String baseUrl = "http://localhost:8000";
   static final http.Client _client = http.Client();
 
   static Future<Map<String, dynamic>> login(

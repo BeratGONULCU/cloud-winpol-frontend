@@ -1,8 +1,8 @@
 import 'package:cloud_winpol_frontend/screens/customer_main_screen.dart';
 import 'package:cloud_winpol_frontend/screens/web/customer_main_web.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
-import 'package:cloud_winpol_frontend/services/auth_storage.dart';
-import 'package:cloud_winpol_frontend/services/customer_login_service.dart';
+import 'package:cloud_winpol_frontend/service/auth_storage.dart';
+import 'package:cloud_winpol_frontend/service/customer_login_service.dart';
 import 'package:cloud_winpol_frontend/utils/show_pop.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/buttons/app_button.dart';

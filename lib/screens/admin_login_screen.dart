@@ -1,3 +1,4 @@
+import 'package:cloud_winpol_frontend/screens/admin_main_screen.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/utils/show_pop.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
@@ -7,9 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
 import 'package:cloud_winpol_frontend/widgets/buttons/app_button.dart';
 import 'package:cloud_winpol_frontend/widgets/text/app_text_field.dart';
-import 'package:cloud_winpol_frontend/services/login_service.dart';
+import 'package:cloud_winpol_frontend/service/login_service.dart';
 import 'package:cloud_winpol_frontend/utils/show_pop.dart';
-import 'package:cloud_winpol_frontend/services/auth_storage.dart';
+import 'package:cloud_winpol_frontend/service/auth_storage.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   static const String routeName = '/adminLogin';
@@ -79,6 +80,12 @@ class _LoginScreenState extends State<AdminLoginScreen> {
         print("TOKEN SAVED: $token");
 
         showPop(context, "Giriş başarılı", PopType.success);
+
+        showPop(context, "Giriş başarılı", PopType.success);
+
+        await Future.delayed(const Duration(milliseconds: 2000));
+
+        Navigator.pushReplacementNamed(context, AdminMainScreen.routeName);
 
         // TODO: navigate et
       } else if (result.containsKey("error")) {

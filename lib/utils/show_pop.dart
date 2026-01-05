@@ -9,7 +9,7 @@ void showPop(BuildContext context, String message, PopType type) {
 
   switch (type) {
     case PopType.success:
-      color = Colors.green;
+      color = const Color(0xFF08558E);
       icon = Icons.check_circle_rounded;
       title = "Başarılı";
       break;

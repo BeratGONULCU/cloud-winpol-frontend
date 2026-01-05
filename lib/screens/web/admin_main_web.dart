@@ -1,9 +1,15 @@
+import 'package:cloud_winpol_frontend/models/customer_action.dart';
+import 'package:cloud_winpol_frontend/service/company_service.dart';
+import 'package:cloud_winpol_frontend/widgets/buttons/panelActionBar.dart';
+import 'package:cloud_winpol_frontend/widgets/buttons/submit_button.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/admin_app_draver.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
 import 'dart:ui';
+
+import 'package:flutter/services.dart';
 
 class AdminMainWebScreen extends StatefulWidget {
   static const String routeName = '/adminMain';
@@ -263,22 +269,122 @@ class _PanelContainer extends StatelessWidget {
 // =======================
 //
 
-class CustomerPanel extends StatelessWidget {
+
+class CustomerPanel extends StatefulWidget {
   const CustomerPanel({super.key});
 
   @override
+  State<CustomerPanel> createState() => _CustomerPanelState();
+}
+
+class _CustomerPanelState extends State<CustomerPanel> {
+  CustomerAction action = CustomerAction.create;
+
+  final _taxNoController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _companyCodeController = TextEditingController();
+
+  final _editTaxNoController = TextEditingController();
+  final _editUnvan1Controller = TextEditingController();
+  final _editUnvan2Controller = TextEditingController();
+  final _editTcController = TextEditingController();
+  final _editVergiDaireController = TextEditingController();
+  final _editWebsiteController = TextEditingController();
+
+  void _error(String msg) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<void> _submitCreate() async {
+    final tax = _taxNoController.text.trim();
+    final name = _nameController.text.trim();
+    final code = _companyCodeController.text.trim();
+
+    if (tax.length != 10) {
+      _error("Vergi No 10 haneli olmalıdır");
+      return;
+    }
+    if (name.isEmpty || code.isEmpty) {
+      _error("Alanlar boş bırakılamaz");
+      return;
+    }
+
+    await CompanyService.createCustomer(
+      vergiNo: tax,
+      cariAdi: name,
+      companyCode: code,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return _PanelContainer(
-      title: "Müşteri İşlemleri",
-      child: Center(
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _MinimalTextBox(hint: "Cari Adı"),
-              const SizedBox(height: 12),
-              _MinimalTextBox(hint: "Vergi No"),
-            ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CustomerActionBar(
+          selected: action,
+          onChanged: (a) => setState(() => action = a),
+        ),
+        const SizedBox(height: 18),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          child: action == CustomerAction.create
+              ? _createForm()
+              : _editForm(),
+        ),
+      ],
+    );
+  }
+
+  Widget _createForm() {
+    return Column(
+      key: const ValueKey("create"),
+      children: [
+        _box("Vergi No", _taxNoController, digits: 10),
+        _box("Cari Adı", _nameController),
+        _box("Şirket Kodu", _companyCodeController),
+        const SizedBox(height: 12),
+        SubmitButton(label: "Müşteri Oluştur", onPressed: _submitCreate),
+      ],
+    );
+  }
+
+  Widget _editForm() {
+    return Column(
+      key: const ValueKey("edit"),
+      children: [
+        _box("Vergi No", _editTaxNoController, digits: 10),
+        _box("Cari Ünvan", _editUnvan1Controller),
+        _box("Cari Ünvan 2", _editUnvan2Controller),
+        _box("TC Kimlik No", _editTcController, digits: 11),
+        _box("Vergi Dairesi", _editVergiDaireController),
+        _box("Website", _editWebsiteController),
+        const SizedBox(height: 12),
+        SubmitButton(label: "Müşteri Güncelle", onPressed: () {}),
+      ],
+    );
+  }
+
+  Widget _box(String hint, TextEditingController c, {int? digits}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: SizedBox(
+        width: 280,
+        child: TextField(
+          controller: c,
+          keyboardType: digits != null ? TextInputType.number : null,
+          inputFormatters: digits != null
+              ? [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(digits)
+                ]
+              : null,
+          decoration: InputDecoration(
+            hintText: hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         ),
       ),

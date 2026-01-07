@@ -9,6 +9,7 @@ class WinpolHeader extends StatefulWidget implements PreferredSizeWidget {
   final VoidCallback? onMenu;
   final String? title;
   final bool showLogo;
+  final TextStyle? titleStyle;
 
   const WinpolHeader({
     super.key,
@@ -17,6 +18,7 @@ class WinpolHeader extends StatefulWidget implements PreferredSizeWidget {
     this.onMenu,
     this.title,
     this.showLogo = false,
+    this.titleStyle,
   });
 
   @override
@@ -141,11 +143,14 @@ class _WinpolHeaderState extends State<WinpolHeader> {
                       )
                     : Text(
                         widget.title ?? "",
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
-                        ),
+                        style:
+                            widget.titleStyle ??
+                            TextStyle(
+                              fontSize: 15.5, 
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: -0.25,
+                              color: Colors.black.withOpacity(0.65),
+                            ),
                       ),
               ),
 

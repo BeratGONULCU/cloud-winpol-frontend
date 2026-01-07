@@ -5,31 +5,32 @@ final List<ShortcutItem> homeShortcuts = [
   ShortcutItem(
     icon: Icons.receipt_long,
     title: "Faturalar",
-    onTap: () {},
+    onTap: (context) {
+      //Navigator.pushNamed(context, '/adminLogin');
+    },
   ),
+  ShortcutItem(icon: Icons.inventory_2, title: "Ürünler", onTap: (context) {}),
   ShortcutItem(
-    icon: Icons.inventory_2,
-    title: "Ürünler",
-    onTap: () {},
+    icon: Icons.people,
+    title: "Kullanıcılar",
+    onTap: (context) {
+      Navigator.pushNamed(context, '/userList');
+    },
   ),
   ShortcutItem(
     icon: Icons.people,
-    title: "Müşteriler",
-    onTap: () {},
+    title: "Şubeler",
+    onTap: (context) {
+      Navigator.pushNamed(context, '/branchList');
+    },
   ),
-  ShortcutItem(
-    icon: Icons.local_shipping,
-    title: "İrsaliyeler",
-    onTap: () {},
-  ),
-  ShortcutItem(
-    icon: Icons.bar_chart,
-    title: "Raporlar",
-    onTap: () {},
-  ),
+  ShortcutItem(icon: Icons.warehouse, title: "Depolar", onTap: (context) {}),
+  ShortcutItem(icon: Icons.bar_chart, title: "Raporlar", onTap: (context) {}),
   ShortcutItem(
     icon: Icons.settings,
     title: "Ayarlar",
-    onTap: () {},
+    onTap: (context) {
+      Navigator.pushNamed(context, '/settings');
+    },
   ),
 ];

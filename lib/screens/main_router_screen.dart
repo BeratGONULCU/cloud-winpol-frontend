@@ -16,7 +16,10 @@ class MainRouterScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF0F4C81), Color.fromARGB(39, 28, 107, 160)],
+            colors: [
+              Color(0xFF0F4C81),
+              Color.fromARGB(39, 28, 107, 160)
+            ],
           ),
         ),
         child: Center(
@@ -45,3 +48,4 @@ class MainRouterScreen extends StatelessWidget {
     );
   }
 }
+

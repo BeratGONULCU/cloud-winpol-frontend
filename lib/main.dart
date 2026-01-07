@@ -7,6 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/screens/admin_login_screen.dart';
 import 'package:cloud_winpol_frontend/screens/main_router_screen.dart';
 import 'package:cloud_winpol_frontend/screens/customer_home_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customerList_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/userList_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/user_insert_screen.dart';
+import 'package:cloud_winpol_frontend/screens/branchList_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/mikroAPI_main_screen.dart';
 
 void main() {
   runApp(const WinpolApp());
@@ -29,6 +34,11 @@ class WinpolApp extends StatelessWidget {
         '/settings': (_) => const SettingsScreen(),
         '/adminMain': (_) => const AdminMainScreen(),
         '/homeScreen': (_) => const HomeDashboardScreen(),
+        '/customerList': (_) => const CustomerListScreen(),
+        '/userList': (_) => const UserlistMainScreen(),
+        '/userInsertWeb': (_) => const userInsertScreen(),
+        '/branchList': (_) => const BranchlistMainScreen(),
+        '/mikroAPI': (_) => const MikroAPIMainScreen(),
       },
     );
   }

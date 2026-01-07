@@ -1,5 +1,5 @@
 import 'package:cloud_winpol_frontend/screens/customer_main_screen.dart';
-import 'package:cloud_winpol_frontend/screens/web/customer_main_web.dart';
+import 'package:cloud_winpol_frontend/screens/customer_home_screen.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/service/auth_storage.dart';
 import 'package:cloud_winpol_frontend/service/customer_login_service.dart';
@@ -99,7 +99,7 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
 
         await Future.delayed(const Duration(milliseconds: 2000));
 
-        Navigator.pushReplacementNamed(context, CustomerMainScreen.routeName);
+        Navigator.pushReplacementNamed(context, HomeDashboardScreen.routeName);
       } else if (result.containsKey("error")) {
         if (result["error"] == "wrong_password") {
           showPop(context, "Kullanıcı adı veya şifre hatalı", PopType.error);

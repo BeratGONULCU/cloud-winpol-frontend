@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 class ShortcutItem {
   final IconData icon;
   final String title;
-  final VoidCallback onTap;
+  final void Function(BuildContext context) onTap;
 
-  const ShortcutItem({
+  ShortcutItem({
     required this.icon,
     required this.title,
     required this.onTap,

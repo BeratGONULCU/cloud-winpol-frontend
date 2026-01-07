@@ -1,28 +1,28 @@
-import 'package:cloud_winpol_frontend/models/admin_main_args.dart';
 import 'package:cloud_winpol_frontend/models/customer_action.dart';
-import 'package:cloud_winpol_frontend/widgets/navigation/admin_app_draver.dart';
+import 'package:cloud_winpol_frontend/service/company_service.dart';
+import 'package:cloud_winpol_frontend/widgets/buttons/panelActionBar.dart';
+import 'package:cloud_winpol_frontend/widgets/buttons/submit_button.dart';
+import 'package:cloud_winpol_frontend/widgets/navigation/customer_app_draver.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/AdminMainScaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
-import 'package:cloud_winpol_frontend/widgets/buttons/panelActionBar.dart';
-import 'package:cloud_winpol_frontend/service/company_service.dart';
-import 'package:cloud_winpol_frontend/widgets/buttons/submit_button.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/admin_tab.dart';
-import 'package:flutter/cupertino.dart';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
-class AdminMainMobileScreen extends StatefulWidget {
-  const AdminMainMobileScreen({super.key});
+class userInsertScreen extends StatefulWidget {
+  static const String routeName = '/userInsertWeb';
+
+  const userInsertScreen({super.key});
 
   @override
-  State<AdminMainMobileScreen> createState() => _AdminMainMobileScreenState();
+  State<userInsertScreen> createState() => _UserInsertWebScreenState();
 }
 
-class _AdminMainMobileScreenState extends State<AdminMainMobileScreen> {
+class _UserInsertWebScreenState extends State<userInsertScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   int _selectedIndex = 0;
@@ -41,36 +41,25 @@ class _AdminMainMobileScreenState extends State<AdminMainMobileScreen> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    final args = ModalRoute.of(context)?.settings.arguments as AdminMainArgs?;
-
-    if (args != null) {
-      _selectedIndex = args.tabIndex;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.body, // ← EKLE
       key: _scaffoldKey,
-      drawer: const AdminAppDrawer(),
+      drawer: const CustomerAppDrawer(),
       appBar: WinpolHeader(
         title: "",
         showLogo: false,
         onBack: null,
         onMenu: () {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _scaffoldKey.currentState?.openDrawer();
-          });
+          if (_scaffoldKey.currentState != null) {
+            _scaffoldKey.currentState!.openDrawer();
+          }
         },
         onSettings: () =>
             Navigator.pushNamed(context, SettingsScreen.routeName),
       ),
       body: AdminMainScaffold(
-        toolbarBottom: true,
+        toolbarBottom: false,
         selectedIndex: _selectedIndex,
         onSelect: (i) => setState(() => _selectedIndex = i),
         tabs: tabs,
@@ -86,7 +75,7 @@ class _AdminMainMobileScreenState extends State<AdminMainMobileScreen> {
 //
 
 class _AdminToolbar extends StatelessWidget {
-  final List<AdminTab> tabs;
+  final List<_AdminTab> tabs;
   final int selectedIndex;
   final ValueChanged<int> onSelect;
 
@@ -100,7 +89,7 @@ class _AdminToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
 
-    final isCompact = width < 600; // telefon breakpoint
+    final isCompact = width < 600; // 📱 telefon breakpoint
     final isScrollable = width < 900;
 
     final content = Row(
@@ -178,10 +167,16 @@ class _AdminToolbar extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.75),
+                color: Colors.white.withOpacity(0.7),
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: Colors.black12),
               ),
+              child: isScrollable
+                  ? SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: content,
+                    )
+                  : content,
             ),
           ),
         ),
@@ -195,6 +190,14 @@ class _AdminToolbar extends StatelessWidget {
 // ADMIN TAB MODEL
 // =======================
 //
+
+class _AdminTab {
+  final String title;
+  final IconData icon;
+  final Widget widget;
+
+  const _AdminTab(this.title, this.icon, this.widget);
+}
 
 //
 // =======================
@@ -240,6 +243,7 @@ class _PanelContainer extends StatelessWidget {
 // PANELS (PLACEHOLDERS)
 // =======================
 //
+
 class CustomerPanel extends StatefulWidget {
   const CustomerPanel({super.key});
 
@@ -260,11 +264,11 @@ class _CustomerPanelState extends State<CustomerPanel> {
   final _companyCodeController = TextEditingController();
 
   final _editTaxNoController = TextEditingController();
-  final _editCariUnvanController = TextEditingController();
-  final _editCariUnvanController2 = TextEditingController();
-  final _editCariTCNOController = TextEditingController();
+  final _editUnvan1Controller = TextEditingController();
+  final _editUnvan2Controller = TextEditingController();
+  final _editTcController = TextEditingController();
   final _editVergiDaireController = TextEditingController();
-  final _editWebSiteController = TextEditingController();
+  final _editWebsiteController = TextEditingController();
 
   // ================= INIT =================
   @override
@@ -276,18 +280,15 @@ class _CustomerPanelState extends State<CustomerPanel> {
   @override
   void dispose() {
     _editTaxNoController.removeListener(_onEditVergiNoChanged);
-
     _taxNoController.dispose();
     _nameController.dispose();
     _companyCodeController.dispose();
-
     _editTaxNoController.dispose();
-    _editCariUnvanController.dispose();
-    _editCariUnvanController2.dispose();
-    _editCariTCNOController.dispose();
+    _editUnvan1Controller.dispose();
+    _editUnvan2Controller.dispose();
+    _editTcController.dispose();
     _editVergiDaireController.dispose();
-    _editWebSiteController.dispose();
-
+    _editWebsiteController.dispose();
     super.dispose();
   }
 
@@ -314,13 +315,13 @@ class _CustomerPanelState extends State<CustomerPanel> {
       _lastFetchedVergiNo = vergiNo;
 
       setState(() {
-        _editCariUnvanController.text = firm["firma_unvan"] ?? "";
-        _editCariUnvanController2.text = firm["firma_unvan2"] ?? "";
-        _editCariTCNOController.text = firm["firma_TCkimlik"] ?? "";
+        _editUnvan1Controller.text = firm["firma_unvan"] ?? "";
+        _editUnvan2Controller.text = firm["firma_unvan2"] ?? "";
+        _editTcController.text = firm["firma_TCkimlik"] ?? "";
         _editVergiDaireController.text = firm["firma_FVergiDaire"] ?? "";
-        _editWebSiteController.text = firm["firma_web_sayfasi"] ?? "";
+        _editWebsiteController.text = firm["firma_web_sayfasi"] ?? "";
       });
-    } catch (_) {
+    } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Firma bulunamadı")));
@@ -332,151 +333,137 @@ class _CustomerPanelState extends State<CustomerPanel> {
   // ================= BUILD =================
   @override
   Widget build(BuildContext context) {
-    return _PanelContainer(
-      title: "Müşteri İşlemleri",
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CustomerActionBar(
-            selected: action,
-            onChanged: (a) => setState(() => action = a),
-          ),
-          const SizedBox(height: 18),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: action == CustomerAction.create
-                ? _createForm()
-                : _editForm(),
-          ),
-        ],
+    final isWeb = MediaQuery.of(context).size.width > 900;
+
+    return Center(
+      child: Container(
+        width: isWeb ? 760 : 360,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: Colors.black12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Kullanıcı Yönetimi",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              action == CustomerAction.create
+                  ? "Yeni kullanıcı kaydı oluşturun"
+                  : "Mevcut kullanıcı bilgilerini güncelleyin",
+              style: TextStyle(fontSize: 13, color: Colors.black54),
+            ),
+            const SizedBox(height: 20),
+
+            CustomerActionBar(
+              selected: action,
+              onChanged: (a) => setState(() => action = a),
+            ),
+
+            const SizedBox(height: 24),
+
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 260),
+              child: action == CustomerAction.create
+                  ? _createForm(isWeb)
+                  : _editForm(isWeb),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   // ================= CREATE FORM =================
-  Widget _createForm() {
-    return Column(
-      key: const ValueKey("create"),
-      children: [
-        _cupertinoInput(
-          controller: _taxNoController,
-          placeholder: "Vergi No",
-          digits: 10,
-        ),
-        const SizedBox(height: 8),
-        _cupertinoInput(controller: _nameController, placeholder: "Cari Adı"),
-        const SizedBox(height: 8),
-        _cupertinoInput(
-          controller: _companyCodeController,
-          placeholder: "Şirket Kodu",
-        ),
-        const SizedBox(height: 20),
-        SizedBox(
-          width: 200,
-          child: CupertinoButton(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(14),
-            onPressed: () {},
-            child: const Text(
-              "Müşteri Oluştur",
-              style: TextStyle(
-                fontWeight: FontWeight.w300,
-                color: Colors.white, 
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+  Widget _createForm(bool isWeb) {
+    return _formWrapper(isWeb, [
+      _input("Vergi No", _taxNoController, digits: 10),
+      _input("Cari Adı", _nameController),
+      _input("Şirket Kodu", _companyCodeController),
+    ], SubmitButton(label: "Müşteri Oluştur", onPressed: () {}));
   }
 
   // ================= EDIT FORM =================
-  Widget _editForm() {
+  Widget _editForm(bool isWeb) {
     return Column(
-      key: const ValueKey("edit"),
       children: [
         if (_loadingFirm)
           const Padding(
             padding: EdgeInsets.only(bottom: 12),
             child: LinearProgressIndicator(minHeight: 2),
           ),
-
-        _cupertinoInput(
-          controller: _editTaxNoController,
-          placeholder: "Vergi No",
-          digits: 10,
-        ),
-        const SizedBox(height: 6),
-        _cupertinoInput(
-          controller: _editCariUnvanController,
-          placeholder: "Cari Ünvan",
-        ),
-        const SizedBox(height: 6),
-        _cupertinoInput(
-          controller: _editCariUnvanController2,
-          placeholder: "Cari Ünvan 2",
-        ),
-        const SizedBox(height: 6),
-        _cupertinoInput(
-          controller: _editCariTCNOController,
-          placeholder: "TC Kimlik No",
-          digits: 11,
-        ),
-        const SizedBox(height: 6),
-        _cupertinoInput(
-          controller: _editVergiDaireController,
-          placeholder: "Vergi Dairesi",
-        ),
-        const SizedBox(height: 6),
-        _cupertinoInput(
-          controller: _editWebSiteController,
-          placeholder: "Website",
-        ),
-        const SizedBox(height: 24),
-        SizedBox(
-          width: 200,
-          child: CupertinoButton(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(14),
-            onPressed: () {},
-            child: const Text(
-              "Müşteri Güncelle",
-              style: TextStyle(
-                fontWeight: FontWeight.w300,
-                color: Colors.white, // ← BUNU EKLE
-              ),
-            ),
-          ),
-        ),
+        _formWrapper(isWeb, [
+          _input("Vergi No", _editTaxNoController, digits: 10),
+          _input("Cari Ünvan", _editUnvan1Controller),
+          _input("Cari Ünvan 2", _editUnvan2Controller),
+          _input("TC Kimlik No", _editTcController, digits: 11),
+          _input("Vergi Dairesi", _editVergiDaireController),
+          _input("Website", _editWebsiteController),
+        ], SubmitButton(label: "Müşteri Güncelle", onPressed: () {})),
       ],
     );
   }
 
-  // ================= INPUT HELPER =================
-  Widget _cupertinoInput({
-    required TextEditingController controller,
-    required String placeholder,
-    int? digits,
-  }) {
-    return SizedBox(
-      width: 280,
-      child: CupertinoTextField(
-        controller: controller,
-        placeholder: placeholder,
-        keyboardType: digits != null ? TextInputType.number : null,
-        inputFormatters: digits != null
-            ? [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(digits),
-              ]
-            : null,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.black26),
-        ),
+  // ================= FORM HELPERS =================
+  Widget _formWrapper(bool isWeb, List<Widget> inputs, Widget button) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isWeb ? 24 : 16),
+      child: Column(
+        children: [
+          Wrap(
+            spacing: 18,
+            runSpacing: 14,
+            children: inputs
+                .map(
+                  (e) =>
+                      SizedBox(width: isWeb ? 320 : double.infinity, child: e),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 28),
+          Align(
+            alignment: Alignment.centerRight,
+            child: SizedBox(width: 200, height: 50, child: button),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _input(String label, TextEditingController c, {int? digits}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.black54)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: c,
+          keyboardType: digits != null ? TextInputType.number : null,
+          inputFormatters: digits != null
+              ? [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(digits),
+                ]
+              : null,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.black12),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -593,25 +580,14 @@ class SettingsPanel extends StatelessWidget {
 
 class _MinimalTextBox extends StatelessWidget {
   final String hint;
-  final TextEditingController controller;
-  final List<TextInputFormatter>? inputFormatters;
-  final TextInputType? keyboardType;
 
-  const _MinimalTextBox({
-    required this.hint,
-    required this.controller,
-    this.inputFormatters,
-    this.keyboardType,
-  });
+  const _MinimalTextBox({required this.hint});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 280,
       child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
         style: const TextStyle(fontSize: 14),
         decoration: InputDecoration(
           hintText: hint,

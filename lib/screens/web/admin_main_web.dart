@@ -3,16 +3,17 @@ import 'package:cloud_winpol_frontend/service/company_service.dart';
 import 'package:cloud_winpol_frontend/widgets/buttons/panelActionBar.dart';
 import 'package:cloud_winpol_frontend/widgets/buttons/submit_button.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/admin_app_draver.dart';
+import 'package:cloud_winpol_frontend/widgets/theme/AdminMainScaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
+import 'package:cloud_winpol_frontend/widgets/theme/admin_tab.dart';
 import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
 class AdminMainWebScreen extends StatefulWidget {
-  static const String routeName = '/adminMain';
   const AdminMainWebScreen({super.key});
 
   @override
@@ -21,73 +22,45 @@ class AdminMainWebScreen extends StatefulWidget {
 
 class _AdminMainWebScreenState extends State<AdminMainWebScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   int _selectedIndex = 0;
+  late final List<AdminTab> tabs;
 
-  final List<_AdminTab> _tabs = const [
-    _AdminTab("Müşteriler", Icons.people, CustomerPanel()),
-    _AdminTab("Lisanslar", Icons.security, LicencePanel()),
-    _AdminTab("Mikro API", Icons.account_tree, MikroApiPanel()),
-    _AdminTab(
-      "Ayarlar",
-      Icons.settings_accessibility_outlined,
-      SettingsPanel(),
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
 
-  Future<bool> _onBackPressed() async {
-    return true;
+    tabs = const [
+      AdminTab("Müşteriler", Icons.people, CustomerPanel()),
+      AdminTab("Lisanslar", Icons.security, LicencePanel()),
+      AdminTab("Mikro API", Icons.account_tree, MikroApiPanel()),
+      AdminTab("Ayarlar", Icons.settings, SettingsPanel()),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.body, // ← EKLE
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF5F6F8),
       drawer: const AdminAppDrawer(),
       appBar: WinpolHeader(
         title: "",
         showLogo: false,
         onBack: null,
         onMenu: () {
-          _scaffoldKey.currentState?.openDrawer();
+          if (_scaffoldKey.currentState != null) {
+            _scaffoldKey.currentState!.openDrawer();
+          }
         },
-        onSettings: () {
-          Navigator.pushNamed(context, SettingsScreen.routeName);
-        },
+        onSettings: () =>
+            Navigator.pushNamed(context, SettingsScreen.routeName),
       ),
-
-      body: Column(
-        children: [
-          _AdminToolbar(
-            tabs: _tabs,
-            selectedIndex: _selectedIndex,
-            onSelect: (i) => setState(() => _selectedIndex = i),
-          ),
-          Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeIn,
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, 0.05),
-                      end: Offset.zero,
-                    ).animate(animation),
-                    child: child,
-                  ),
-                );
-              },
-              child: Padding(
-                key: ValueKey(_selectedIndex),
-                padding: const EdgeInsets.all(16),
-                child: _tabs[_selectedIndex].widget,
-              ),
-            ),
-          ),
-        ],
+      body: AdminMainScaffold(
+        toolbarBottom: false,
+        selectedIndex: _selectedIndex,
+        onSelect: (i) => setState(() => _selectedIndex = i),
+        tabs: tabs,
       ),
     );
   }
@@ -269,7 +242,6 @@ class _PanelContainer extends StatelessWidget {
 // =======================
 //
 
-
 class CustomerPanel extends StatefulWidget {
   const CustomerPanel({super.key});
 
@@ -280,6 +252,11 @@ class CustomerPanel extends StatefulWidget {
 class _CustomerPanelState extends State<CustomerPanel> {
   CustomerAction action = CustomerAction.create;
 
+  // ================= STATE =================
+  String? _lastFetchedVergiNo;
+  bool _loadingFirm = false;
+
+  // ================= CONTROLLERS =================
   final _taxNoController = TextEditingController();
   final _nameController = TextEditingController();
   final _companyCodeController = TextEditingController();
@@ -291,103 +268,200 @@ class _CustomerPanelState extends State<CustomerPanel> {
   final _editVergiDaireController = TextEditingController();
   final _editWebsiteController = TextEditingController();
 
-  void _error(String msg) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg)));
-  }
-
-  Future<void> _submitCreate() async {
-    final tax = _taxNoController.text.trim();
-    final name = _nameController.text.trim();
-    final code = _companyCodeController.text.trim();
-
-    if (tax.length != 10) {
-      _error("Vergi No 10 haneli olmalıdır");
-      return;
-    }
-    if (name.isEmpty || code.isEmpty) {
-      _error("Alanlar boş bırakılamaz");
-      return;
-    }
-
-    await CompanyService.createCustomer(
-      vergiNo: tax,
-      cariAdi: name,
-      companyCode: code,
-    );
+  // ================= INIT =================
+  @override
+  void initState() {
+    super.initState();
+    _editTaxNoController.addListener(_onEditVergiNoChanged);
   }
 
   @override
+  void dispose() {
+    _editTaxNoController.removeListener(_onEditVergiNoChanged);
+    _taxNoController.dispose();
+    _nameController.dispose();
+    _companyCodeController.dispose();
+    _editTaxNoController.dispose();
+    _editUnvan1Controller.dispose();
+    _editUnvan2Controller.dispose();
+    _editTcController.dispose();
+    _editVergiDaireController.dispose();
+    _editWebsiteController.dispose();
+    super.dispose();
+  }
+
+  // ================= LISTENER =================
+  void _onEditVergiNoChanged() {
+    final vergiNo = _editTaxNoController.text.trim();
+
+    if (vergiNo.length != 10) return;
+    if (vergiNo == _lastFetchedVergiNo) return;
+    if (_loadingFirm) return;
+
+    _fetchFirmByVergiNo(vergiNo);
+  }
+
+  // ================= API CALL =================
+  Future<void> _fetchFirmByVergiNo(String vergiNo) async {
+    try {
+      setState(() => _loadingFirm = true);
+
+      final Map<String, dynamic> firm = await CompanyService.getFirmByVergiNo(
+        vergiNo,
+      );
+
+      _lastFetchedVergiNo = vergiNo;
+
+      setState(() {
+        _editUnvan1Controller.text = firm["firma_unvan"] ?? "";
+        _editUnvan2Controller.text = firm["firma_unvan2"] ?? "";
+        _editTcController.text = firm["firma_TCkimlik"] ?? "";
+        _editVergiDaireController.text = firm["firma_FVergiDaire"] ?? "";
+        _editWebsiteController.text = firm["firma_web_sayfasi"] ?? "";
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Firma bulunamadı")));
+    } finally {
+      setState(() => _loadingFirm = false);
+    }
+  }
+
+  // ================= BUILD =================
+  @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        CustomerActionBar(
-          selected: action,
-          onChanged: (a) => setState(() => action = a),
+    final isWeb = MediaQuery.of(context).size.width > 900;
+
+    return Center(
+      child: Container(
+        width: isWeb ? 760 : 360,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: Colors.black12),
         ),
-        const SizedBox(height: 18),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 250),
-          child: action == CustomerAction.create
-              ? _createForm()
-              : _editForm(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Müşteri Yönetimi",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              action == CustomerAction.create
+                  ? "Yeni müşteri kaydı oluşturun"
+                  : "Mevcut müşteri bilgilerini güncelleyin",
+              style: TextStyle(fontSize: 13, color: Colors.black54),
+            ),
+            const SizedBox(height: 20),
+
+            CustomerActionBar(
+              selected: action,
+              onChanged: (a) => setState(() => action = a),
+            ),
+
+            const SizedBox(height: 24),
+
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 260),
+              child: action == CustomerAction.create
+                  ? _createForm(isWeb)
+                  : _editForm(isWeb),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _createForm() {
+  // ================= CREATE FORM =================
+  Widget _createForm(bool isWeb) {
+    return _formWrapper(isWeb, [
+      _input("Vergi No", _taxNoController, digits: 10),
+      _input("Cari Adı", _nameController),
+      _input("Şirket Kodu", _companyCodeController),
+    ], SubmitButton(label: "Müşteri Oluştur", onPressed: () {}));
+  }
+
+  // ================= EDIT FORM =================
+  Widget _editForm(bool isWeb) {
     return Column(
-      key: const ValueKey("create"),
       children: [
-        _box("Vergi No", _taxNoController, digits: 10),
-        _box("Cari Adı", _nameController),
-        _box("Şirket Kodu", _companyCodeController),
-        const SizedBox(height: 12),
-        SubmitButton(label: "Müşteri Oluştur", onPressed: _submitCreate),
+        if (_loadingFirm)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: LinearProgressIndicator(minHeight: 2),
+          ),
+        _formWrapper(isWeb, [
+          _input("Vergi No", _editTaxNoController, digits: 10),
+          _input("Cari Ünvan", _editUnvan1Controller),
+          _input("Cari Ünvan 2", _editUnvan2Controller),
+          _input("TC Kimlik No", _editTcController, digits: 11),
+          _input("Vergi Dairesi", _editVergiDaireController),
+          _input("Website", _editWebsiteController),
+        ], SubmitButton(label: "Müşteri Güncelle", onPressed: () {})),
       ],
     );
   }
 
-  Widget _editForm() {
-    return Column(
-      key: const ValueKey("edit"),
-      children: [
-        _box("Vergi No", _editTaxNoController, digits: 10),
-        _box("Cari Ünvan", _editUnvan1Controller),
-        _box("Cari Ünvan 2", _editUnvan2Controller),
-        _box("TC Kimlik No", _editTcController, digits: 11),
-        _box("Vergi Dairesi", _editVergiDaireController),
-        _box("Website", _editWebsiteController),
-        const SizedBox(height: 12),
-        SubmitButton(label: "Müşteri Güncelle", onPressed: () {}),
-      ],
-    );
-  }
-
-  Widget _box(String hint, TextEditingController c, {int? digits}) {
+  // ================= FORM HELPERS =================
+  Widget _formWrapper(bool isWeb, List<Widget> inputs, Widget button) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: SizedBox(
-        width: 280,
-        child: TextField(
+      padding: EdgeInsets.symmetric(horizontal: isWeb ? 24 : 16),
+      child: Column(
+        children: [
+          Wrap(
+            spacing: 18,
+            runSpacing: 14,
+            children: inputs
+                .map(
+                  (e) =>
+                      SizedBox(width: isWeb ? 320 : double.infinity, child: e),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 28),
+          Align(
+            alignment: Alignment.centerRight,
+            child: SizedBox(width: 200, height: 50, child: button),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _input(String label, TextEditingController c, {int? digits}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.black54)),
+        const SizedBox(height: 6),
+        TextField(
           controller: c,
           keyboardType: digits != null ? TextInputType.number : null,
           inputFormatters: digits != null
               ? [
                   FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(digits)
+                  LengthLimitingTextInputFormatter(digits),
                 ]
               : null,
           decoration: InputDecoration(
-            hintText: hint,
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.black12),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

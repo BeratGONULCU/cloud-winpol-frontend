@@ -26,6 +26,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_secure_storage: ^9.0.0
+
   cupertino_icons: ^1.0.8
   http: ^1.6.0
   shared_preferences: ^2.5.4
@@ -50,5 +52,4 @@ flutter:
           weight: 800
 
   assets:
-    - assets/images/winpol_logo.png
-    - assets/images/winpol_logo_blue.png
+    - assets/images/

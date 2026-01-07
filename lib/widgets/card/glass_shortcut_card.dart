@@ -29,39 +29,42 @@ class _GlassShortcutCardState extends State<GlassShortcutCard> {
       onExit: (_) => setState(() => _hover = false),
       child: GestureDetector(
         onTap: widget.onTap,
-        child: AnimatedScale(
-          scale: _hover ? 1.05 : 1,
-          duration: const Duration(milliseconds: 180),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 220),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(_hover ? 0.32 : 0.25),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.35),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.12),
-                      blurRadius: 30,
-                      offset: const Offset(0, 14),
-                    ),
-                    if (_hover)
-                      BoxShadow(
-                        color: AppColors.primary.withOpacity(0.35),
-                        blurRadius: 90,
-                        spreadRadius: -10,
-                      ),
-                  ],
-                ),
-                child: _content(),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          decoration: BoxDecoration(
+            // ⬇️ ZEMİNDEN NET AYRILAN RENK
+            color: const Color(0xFFE1E5EC),
+            borderRadius: BorderRadius.circular(14),
+
+            // ⬇️ DAHA NET SINIR
+            border: Border.all(color: Colors.black.withOpacity(0.22)),
+
+            // ⬇️ KATMANLI GÖLGE (ÇOK ÖNEMLİ)
+            boxShadow: [
+              // ana gölge
+              BoxShadow(
+                color: Colors.black.withOpacity(0.20),
+                blurRadius: 24,
+                offset: const Offset(0, 14),
               ),
-            ),
+
+              // kart üst highlight (Apple hissi)
+              BoxShadow(
+                color: Colors.white.withOpacity(0.35),
+                blurRadius: 1,
+                offset: const Offset(0, -1),
+              ),
+
+              // hover derinliği
+              if (_hover)
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.35),
+                  blurRadius: 40,
+                  offset: const Offset(0, 18),
+                ),
+            ],
           ),
+          child: _content(),
         ),
       ),
     );
@@ -71,24 +74,18 @@ class _GlassShortcutCardState extends State<GlassShortcutCard> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          widget.icon,
-          size: 36,
-          color: Colors.white,
-        ),
-        const SizedBox(height: 12),
+        Icon(widget.icon, size: 26, color: AppColors.primary),
+        const SizedBox(height: 10),
         Text(
           widget.title,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            fontFamily: 'PlusJakartaSans',
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: Color(0xFF1C1C1E), // ⬅ iOS text rengi
           ),
         ),
       ],
     );
   }
 }
-

@@ -34,10 +34,40 @@ class CompanyService {
     );
   }
 
+  /*  get companies by id  */
+
+  static Future<Map<String, dynamic>> getCustomerById({
+    required String vergi_no,
+  }) async {
+    final url = Uri.parse(
+      "$baseUrl/companies/get-companies-by-id"
+      "?vergi_no=${Uri.encodeComponent(vergi_no)}"
+      );
+
+    final response = await ApiClient.get(url);
+
+    if (response.statusCode == 400) {
+      throw Exception("Bu vergi no ile şirket kaydı bulunamadı");
+      // return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+
+    throw Exception("Hata: ${response.statusCode}: ${response.body}");
+  }
+
+  /**
+   * 1) burada ilk önce vergi no ile compannies içerisinden şirketler alınacak varsa return 1 döner 
+   * 2) eğer ki 1 nolu sorgu return 1 ise tenant-firm-create adlı endpoint çalıştırılır.
+   * 3) o da status 200 (created) ise pop-up çıkarılır ve firm kaydı tamamlandı diye.
+   */
+
   static Future<Map<String, dynamic>> getAllCustomer({
     required String vergi_no,
   }) async {
-    final url = Uri.parse("$baseUrl/admin//get-all-companies");
+    final url = Uri.parse("$baseUrl/companies/get-all-companies");
 
     final response = await ApiClient.get(url);
 
@@ -52,6 +82,7 @@ class CompanyService {
 
     throw Exception("Hata: ${response.statusCode}: ${response.body}");
   }
+
 
   static Future<Map<String, dynamic>> editCustomer({
     required String vergiNo,

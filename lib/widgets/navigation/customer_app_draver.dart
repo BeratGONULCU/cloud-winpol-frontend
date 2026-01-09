@@ -351,6 +351,10 @@ class _DrawerSectionState extends State<DrawerSection> {
 }
 
 // ================= ITEM & DIVIDER =================
+// bu yapıya isFavorite kolonu eklenecek , bu eklenen kolon ile customer_home_screen.dart ekranında kontrol edilerek sekmeler getirilicek? 
+// (mobilde sharedPreferences ile kontrol edilebilir ama webde hangi kullanıcının neyi favorilediğini nasıl kontrol edicez? veritabanına kolon mu eklesek?)
+// favorites diye her 1'e 1 ilişki olur
+
 
 class DrawerItem extends StatelessWidget {
   final String title;

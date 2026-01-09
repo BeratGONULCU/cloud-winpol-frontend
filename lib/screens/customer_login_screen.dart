@@ -9,6 +9,8 @@ import 'package:cloud_winpol_frontend/widgets/buttons/app_button.dart';
 import 'package:cloud_winpol_frontend/widgets/text/app_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
+import 'package:cloud_winpol_frontend/models/app_button_type.dart';
+import 'package:flutter/services.dart';
 
 class CustomerLoginScreen extends StatefulWidget {
   static const String routeName = '/customerLogin';
@@ -170,7 +172,9 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                     label: 'Vergi No / TCKN',
                     controller: _vergiNoController,
                     onSubmit: _handleLogin,
+                    // Kullanıcı her yazdıkça kontrol et
                   ),
+
                   const SizedBox(height: 18),
                   AppTextField(
                     label: 'Email',
@@ -186,6 +190,40 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
                   ),
                   const SizedBox(height: 32),
                   AppButton(title: 'GİRİŞ YAP', onTap: _handleLogin),
+                  const SizedBox(height: 16),
+                  Divider(height: 1, color: Colors.black12),
+                  const SizedBox(height: 16),
+
+                  // KAYIT OL
+                  AppButton(
+                    title: "KAYIT OL",
+                    type: AppButtonType.outline,
+                    onTap: () {
+                      Navigator.pushNamed(context, "/customerRegister");
+                    },
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // SORUN / ÖNERİ
+                  AppButton(
+                    title: "SORUN / ÖNERİ BİLDİR",
+                    type: AppButtonType.text,
+                    onTap: () {
+                      Navigator.pushNamed(context, "/feedback");
+                    },
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // DÜZENLE
+                  AppButton(
+                    title: "DÜZENLE",
+                    type: AppButtonType.text,
+                    onTap: () {
+                      Navigator.pushNamed(context, "/customerEdit");
+                    },
+                  ),
                 ],
               ),
             ),

@@ -12,6 +12,7 @@ import 'package:cloud_winpol_frontend/screens/userList_main_screen.dart';
 import 'package:cloud_winpol_frontend/screens/user_insert_screen.dart';
 import 'package:cloud_winpol_frontend/screens/branchList_main_screen.dart';
 import 'package:cloud_winpol_frontend/screens/mikroAPI_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer_register_screen.dart';
 
 void main() {
   runApp(const WinpolApp());
@@ -39,6 +40,7 @@ class WinpolApp extends StatelessWidget {
         '/userInsertWeb': (_) => const userInsertScreen(),
         '/branchList': (_) => const BranchlistMainScreen(),
         '/mikroAPI': (_) => const MikroAPIMainScreen(),
+        '/customerRegister': (_) => const CustomerRegisterScreen(),
       },
     );
   }

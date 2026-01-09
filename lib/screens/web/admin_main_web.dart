@@ -1,5 +1,6 @@
 import 'package:cloud_winpol_frontend/models/customer_action.dart';
 import 'package:cloud_winpol_frontend/service/company_service.dart';
+import 'package:cloud_winpol_frontend/service/tenant_auth_service.dart';
 import 'package:cloud_winpol_frontend/widgets/buttons/panelActionBar.dart';
 import 'package:cloud_winpol_frontend/widgets/buttons/submit_button.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/admin_app_draver.dart';
@@ -258,6 +259,7 @@ class _CustomerPanelState extends State<CustomerPanel> {
 
   // ================= CONTROLLERS =================
   final _taxNoController = TextEditingController();
+  final _TCNoController = TextEditingController();
   final _nameController = TextEditingController();
   final _companyCodeController = TextEditingController();
 
@@ -379,11 +381,87 @@ class _CustomerPanelState extends State<CustomerPanel> {
 
   // ================= CREATE FORM =================
   Widget _createForm(bool isWeb) {
-    return _formWrapper(isWeb, [
-      _input("Vergi No", _taxNoController, digits: 10),
-      _input("Cari Adı", _nameController),
-      _input("Şirket Kodu", _companyCodeController),
-    ], SubmitButton(label: "Müşteri Oluştur", onPressed: () {}));
+    return _formWrapper(
+      isWeb,
+      [
+        _input("Vergi No", _taxNoController, digits: 10),
+        _input("TC Numarası", _TCNoController, digits: 11),
+        _input("Cari Adı", _nameController),
+        _input("Şirket Kodu", _companyCodeController),
+      ],
+      SubmitButton(
+        label: "Müşteri Oluştur",
+        onPressed: () async {
+          final vergiNo = _taxNoController.text.trim();
+          final tcNo = _TCNoController.text.trim();
+          final cariAdi = _nameController.text.trim();
+          final companyCode = _companyCodeController.text.trim();
+
+          if (vergiNo.length != 10 || cariAdi.isEmpty || companyCode.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Zorunlu alanları doldurun")),
+            );
+            return;
+          }
+
+          try {
+            // -------------------------------------------------
+            // companies içinde VAR MI?
+            // -------------------------------------------------
+            bool companyExists = false;
+
+            try {
+              await CompanyService.getCustomerById(vergi_no: vergiNo);
+              companyExists = true;
+            } catch (_) {
+              companyExists = false; // yok → NORMAL
+            }
+
+            // -------------------------------------------------
+            // YOKSA → companies kaydı oluştur
+            // -------------------------------------------------
+            if (!companyExists) {
+              await CompanyService.createCustomer(
+                vergiNo: vergiNo,
+                cariAdi: cariAdi,
+                companyCode: companyCode,
+              );
+            }
+
+            // -------------------------------------------------
+            // tenant firm HER DURUMDA oluştur
+            // -------------------------------------------------
+            await TenantAuthService.createTenantFirm(
+              cariAdi: cariAdi,
+              tc_no: tcNo.isNotEmpty ? tcNo : "",
+              vergiNo: tcNo.isEmpty ? vergiNo : "",
+            );
+
+            // -------------------------------------------------
+            // BAŞARILI
+            // -------------------------------------------------
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  companyExists
+                      ? "Mevcut şirket için tenant kaydı oluşturuldu"
+                      : "Yeni şirket ve tenant kaydı oluşturuldu",
+                ),
+              ),
+            );
+
+            _taxNoController.clear();
+            _TCNoController.clear();
+            _nameController.clear();
+            _companyCodeController.clear();
+          } catch (e) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text("İşlem başarısız: $e")));
+          }
+        },
+      ),
+    ); // burada
   }
 
   // ================= EDIT FORM =================

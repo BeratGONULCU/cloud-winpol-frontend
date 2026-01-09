@@ -57,4 +57,48 @@ class CustomerLoginService {
 
     throw Exception("Session control failed");
   }
+
+  static Future<Map<String, dynamic>> register({
+    required String vergiNo,
+    required String username,
+    required String password,
+    required String roleId,
+    String? longName,
+    String? cepTel,
+    String? email,
+  }) async {
+    final Map<String, String> queryParams = {
+      "vergi_no": vergiNo.trim(),
+      "username": username.trim(),
+      "password": password,
+      "role_id": roleId,
+    };
+
+    if (longName != null && longName.trim().isNotEmpty) {
+      queryParams["longName"] = longName.trim();
+    }
+
+    if (cepTel != null && cepTel.trim().isNotEmpty) {
+      queryParams["cepTel"] = cepTel.trim();
+    }
+
+    if (email != null && email.trim().isNotEmpty) {
+      queryParams["email"] = email.trim();
+    }
+
+    final Uri url = Uri.parse(
+      "$baseUrl/tenant/user-register-to-firmby-vergino",
+    ).replace(queryParameters: queryParams);
+
+    final response = await http.post(url);
+
+    if (response.statusCode == 200 && response.body.isNotEmpty) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+
+    throw Exception(
+      "Kullanıcı kaydı başarısız oldu. "
+      "${response.statusCode}: ${response.body}",
+    );
+  }
 }

@@ -58,7 +58,7 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                   // ================= KULLANICILAR =================
                   _drawerItemWithDivider2(
                     DrawerSection(
-                      title: "Kullanıcılar",
+                      title: "Fatura",
                       icon: Icons.people,
                       onExpandedChanged: (v) =>
                           setState(() => usersExpanded = v),
@@ -67,7 +67,7 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                           DrawerItem(
                             title: "Kullanıcı Listesi",
                             icon: Icons.people_outline,
-                            indent: 24,
+                            indent: 28,
                             isActive: currentRoute == "/userList",
                             onTap: () {
                               Navigator.pop(context);
@@ -79,7 +79,7 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                           DrawerItem(
                             title: "Kullanıcı İşlemleri",
                             icon: Icons.badge_outlined,
-                            indent: 24,
+                            indent: 28,
                             isActive: currentRoute == "/customerList",
                             onTap: () {
                               Navigator.pop(context);
@@ -91,14 +91,14 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                           DrawerItem(
                             title: "Kullanıcı Raporları",
                             icon: Icons.groups_outlined,
-                            indent: 24,
+                            indent: 28,
                           ),
                         ),
                         _drawerItemWithDivider(
                           DrawerItem(
                             title: "Kullanıcı Loglar",
                             icon: Icons.key_outlined,
-                            indent: 24,
+                            indent: 28,
                           ),
                           showDivider: false,
                         ),
@@ -110,7 +110,7 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                   // ================= ŞUBELER =================
                   _drawerItemWithDivider2(
                     DrawerSection(
-                      title: "Şubeler",
+                      title: "Ürünler",
                       icon: Icons.local_shipping,
                       onExpandedChanged: (v) =>
                           setState(() => branchesExpanded = v),
@@ -119,7 +119,7 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                           DrawerItem(
                             title: "Şube Listesi",
                             icon: Icons.list_alt,
-                            indent: 24,
+                            indent: 28,
                             isActive: currentRoute == "/branchList",
                             onTap: () {
                               Navigator.pop(context);
@@ -131,7 +131,7 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                           DrawerItem(
                             title: "Depolar",
                             icon: Icons.warehouse_outlined,
-                            indent: 24,
+                            indent: 28,
                           ),
                           showDivider: false,
                         ),
@@ -140,47 +140,156 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                     showDivider: !branchesExpanded,
                   ),
 
-                  // ================= AYARLAR =================
+                  // ================= DEPOLAR =================
                   _drawerItemWithDivider2(
+                    DrawerSection(
+                      title: "Depolar",
+                      icon: Icons.local_shipping,
+                      onExpandedChanged: (v) =>
+                          setState(() => branchesExpanded = v),
+                      children: [
+                        _drawerItemWithDivider(
+                          DrawerItem(
+                            title: "Şube Listesi",
+                            icon: Icons.list_alt,
+                            indent: 28,
+                            isActive: currentRoute == "/branchList",
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.pushNamed(context, "/branchList");
+                            },
+                          ),
+                        ),
+                        _drawerItemWithDivider(
+                          DrawerItem(
+                            title: "Depolar",
+                            icon: Icons.warehouse_outlined,
+                            indent: 28,
+                          ),
+                          showDivider: false,
+                        ),
+                      ],
+                    ),
+                    showDivider: !branchesExpanded,
+                  ),
+                  // ================= AYARLAR =================
+                  _drawerItemWithDivider(
                     DrawerSection(
                       title: "Ayarlar (Yönetim)",
                       icon: Icons.settings,
                       onExpandedChanged: (v) =>
                           setState(() => settingsExpanded = v),
                       children: [
+                        // ===== KULLANICILAR (ALT SECTION) =====
+                        DrawerSection(
+                          title: "Kullanıcılar",
+                          icon: Icons.people,
+                          indent: 12,
+                          children: [
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Kullanıcı Listesi",
+                                icon: Icons.people_outline,
+                                indent: 28,
+                                isActive: currentRoute == "/userList",
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.pushNamed(context, "/userList");
+                                },
+                              ),
+                            ),
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Kullanıcı İşlemleri",
+                                icon: Icons.badge_outlined,
+                                indent: 28,
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.pushNamed(context, "/customerList");
+                                },
+                              ),
+                            ),
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Kullanıcı Raporları",
+                                icon: Icons.groups_outlined,
+                                indent: 28,
+                              ),
+                            ),
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Kullanıcı Loglar",
+                                icon: Icons.key_outlined,
+                                indent: 28,
+                              ),
+                              showDivider: false,
+                            ),
+                          ],
+                        ),
+
+                        // ===== ŞUBELER (ALT SECTION) =====
+                        DrawerSection(
+                          title: "Şubeler",
+                          icon: Icons.local_shipping,
+                          indent: 12,
+                          children: [
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Şube Listesi",
+                                icon: Icons.list_alt,
+                                indent: 28,
+                                isActive: currentRoute == "/branchList",
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.pushNamed(context, "/branchList");
+                                },
+                              ),
+                            ),
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Depolar",
+                                icon: Icons.warehouse_outlined,
+                                indent: 28,
+                              ),
+                              showDivider: false,
+                            ),
+                          ],
+                        ),
+
+                        // ===== DİĞER AYARLAR =====
                         _drawerItemWithDivider(
                           DrawerItem(
                             title: "Firma",
                             icon: Icons.business,
-                            indent: 24,
+                            indent: 28,
                           ),
                         ),
                         _drawerItemWithDivider(
                           DrawerItem(
                             title: "Şubeler",
                             icon: Icons.apartment,
-                            indent: 24,
+                            indent: 28,
                           ),
                         ),
                         _drawerItemWithDivider(
                           DrawerItem(
                             title: "Depolar",
                             icon: Icons.warehouse,
-                            indent: 24,
+                            indent: 28,
                           ),
                         ),
                         _drawerItemWithDivider(
                           DrawerItem(
                             title: "Kullanıcı",
                             icon: Icons.supervised_user_circle,
-                            indent: 24,
+                            indent: 28,
                           ),
                         ),
                         _drawerItemWithDivider(
                           DrawerItem(
                             title: "Mikro API",
                             icon: Icons.api,
-                            indent: 24,
+                            indent: 28,
                             onTap: () {
                               Navigator.pop(context);
                               Navigator.pushNamed(context, "/mikroApi");
@@ -227,9 +336,7 @@ Widget _logoutButton(BuildContext context) {
         backgroundColor: Colors.red.shade600,
         foregroundColor: Colors.white,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       onPressed: () async {
         Navigator.pop(context); // drawer kapat
@@ -300,6 +407,7 @@ class DrawerSection extends StatefulWidget {
   final IconData icon;
   final List<Widget> children;
   final ValueChanged<bool>? onExpandedChanged;
+  final double indent;
 
   const DrawerSection({
     super.key,
@@ -307,6 +415,7 @@ class DrawerSection extends StatefulWidget {
     required this.icon,
     required this.children,
     this.onExpandedChanged,
+    this.indent = 0,
   });
 
   @override
@@ -322,6 +431,12 @@ class _DrawerSectionState extends State<DrawerSection> {
       children: [
         ListTile(
           dense: true,
+          contentPadding: EdgeInsets.fromLTRB(
+            14 + widget.indent, 
+            2,
+            14,
+            2,
+          ),
           leading: Icon(widget.icon),
           title: Text(
             widget.title,
@@ -338,6 +453,7 @@ class _DrawerSectionState extends State<DrawerSection> {
             widget.onExpandedChanged?.call(_expanded);
           },
         ),
+
         AnimatedSize(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOut,
@@ -351,10 +467,9 @@ class _DrawerSectionState extends State<DrawerSection> {
 }
 
 // ================= ITEM & DIVIDER =================
-// bu yapıya isFavorite kolonu eklenecek , bu eklenen kolon ile customer_home_screen.dart ekranında kontrol edilerek sekmeler getirilicek? 
+// bu yapıya isFavorite kolonu eklenecek , bu eklenen kolon ile customer_home_screen.dart ekranında kontrol edilerek sekmeler getirilicek?
 // (mobilde sharedPreferences ile kontrol edilebilir ama webde hangi kullanıcının neyi favorilediğini nasıl kontrol edicez? veritabanına kolon mu eklesek?)
 // favorites diye her 1'e 1 ilişki olur
-
 
 class DrawerItem extends StatelessWidget {
   final String title;
@@ -417,6 +532,19 @@ Widget _drawerItemWithDivider2(Widget child, {bool showDivider = true}) {
       if (showDivider)
         const Padding(
           padding: EdgeInsets.only(left: 12, right: 27),
+          child: Divider(height: 1, thickness: 0.6),
+        ),
+    ],
+  );
+}
+
+Widget _drawerItemWithDivider3(Widget child, {bool showDivider = true}) {
+  return Column(
+    children: [
+      child,
+      if (showDivider)
+        const Padding(
+          padding: EdgeInsets.only(left: 35, right: 27),
           child: Divider(height: 1, thickness: 0.6),
         ),
     ],

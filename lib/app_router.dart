@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'service/auth_storage.dart';
 
-import 'screens/main_router_screen.dart';
-import 'screens/customer_login_screen.dart';
-import 'screens/admin_login_screen.dart';
-import 'screens/customer_home_screen.dart';
-import 'screens/customerList_main_screen.dart';
-import 'screens/userList_main_screen.dart';
-import 'screens/branchList_main_screen.dart';
-import 'screens/mikroAPI_main_screen.dart';
+import 'screens/admin/main_router_screen.dart';
+import 'screens/customer/customer_login_screen.dart';
+import 'screens/admin/web/admin_login_screen.dart';
+import 'screens/customer/customer_home_screen.dart';
+import 'screens/customer/customerList_main_screen.dart';
+import 'screens/customer/userList_main_screen.dart';
+import 'screens/customer/branchList_main_screen.dart';
+import 'screens/customer/mikroAPI_main_screen.dart';
 import 'screens/settings/settings_screen.dart';
 
 class AppRouter {

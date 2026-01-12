@@ -5,7 +5,7 @@ import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'mobile/customer_main_mobile.dart';
-import 'web/customer_main_web.dart';
+import '../web/customer_main_web.dart';
 
 class CustomerMainScreen extends StatelessWidget {
   static const String routeName = '/customerMain';

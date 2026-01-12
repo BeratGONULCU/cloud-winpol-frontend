@@ -1,11 +1,11 @@
 import 'package:cloud_winpol_frontend/models/admin_main_args.dart';
 import 'package:cloud_winpol_frontend/models/customer_action.dart';
-import 'package:cloud_winpol_frontend/screens/admin_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/admin/web/admin_main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/service/company_service.dart';
 import 'package:cloud_winpol_frontend/models/customer_summary.dart';
 import 'package:cloud_winpol_frontend/widgets/card/customerCard.dart';
-import 'package:cloud_winpol_frontend/screens/customer_detail_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/customer_detail_screen.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/admin_app_draver.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';

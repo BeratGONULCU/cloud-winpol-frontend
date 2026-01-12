@@ -1,5 +1,5 @@
-import 'package:cloud_winpol_frontend/screens/customer_main_screen.dart';
-import 'package:cloud_winpol_frontend/screens/customer_home_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/customer_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/customer_home_screen.dart';
 import 'package:cloud_winpol_frontend/screens/old/customer_login_web.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/service/auth_storage.dart';

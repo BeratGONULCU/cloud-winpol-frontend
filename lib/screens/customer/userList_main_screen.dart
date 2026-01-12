@@ -1,8 +1,6 @@
-import 'package:cloud_winpol_frontend/models/admin_main_args.dart';
 import 'package:cloud_winpol_frontend/models/customer_action.dart';
 import 'package:cloud_winpol_frontend/models/customer_main_args.dart';
-import 'package:cloud_winpol_frontend/screens/admin_main_screen.dart';
-import 'package:cloud_winpol_frontend/screens/user_detail_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/user_detail_screen.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/customer_app_draver.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/service/customer_service.dart';
@@ -17,8 +15,6 @@ class UserlistMainScreen extends StatefulWidget {
   const UserlistMainScreen({super.key});
 
   @override
-      return AuthGuard(
-
   State<UserlistMainScreen> createState() => _UserListScreenState();
 }
 
@@ -124,19 +120,7 @@ class _UserListScreenState extends State<UserlistMainScreen> {
                       ),
 
                       const SizedBox(width: 8),
-                      _actionButton(
-                        label: "Düzenle",
-                        icon: Icons.edit,
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/userInsertWeb',
-                            arguments: const CustomerArgs(
-                              action: CustomerAction.edit,
-                            ),
-                          );
-                        },
-                      ),
+                      
                     ],
                   ),
 
@@ -266,10 +250,29 @@ Widget _userRow(BuildContext context, UserSummary user, int index) {
           Expanded(flex: 2, child: Text(user.longName ?? "-")),
           Expanded(flex: 2, child: Text(user.kullaniciNo?.toString() ?? "-")),
           SizedBox(width: 60, child: _statusBadge(!(user.isPassive ?? false))),
-          const SizedBox(
-            width: 24,
-            child: Icon(Icons.chevron_right, color: Colors.black38),
+          SizedBox(width: 40),
+
+          // buraya edit kısmı eklenecek customerAction.edit
+          SizedBox(
+            width: 20,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.edit, size: 18),
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/userInsertWeb',
+                    arguments: const CustomerArgs(action: CustomerAction.edit),
+                  );
+                },
+              ),
+            ),
           ),
+
+          SizedBox(width: 10),
         ],
       ),
     ),
@@ -334,6 +337,15 @@ Widget _userListHeader() {
             child: Text("Durum", style: TextStyle(fontWeight: FontWeight.w600)),
           ),
         ),
+        SizedBox(width: 40),
+        SizedBox(
+          width: 20,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text("", style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+        ),
+
         SizedBox(width: 24),
       ],
     ),

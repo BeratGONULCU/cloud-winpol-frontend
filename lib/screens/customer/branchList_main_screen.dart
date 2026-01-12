@@ -3,8 +3,8 @@ import 'package:cloud_winpol_frontend/models/branch_main_args.dart';
 import 'package:cloud_winpol_frontend/models/branch_summary.dart';
 import 'package:cloud_winpol_frontend/models/customer_action.dart';
 import 'package:cloud_winpol_frontend/models/customer_main_args.dart';
-import 'package:cloud_winpol_frontend/screens/admin_main_screen.dart';
-import 'package:cloud_winpol_frontend/screens/user_detail_screen.dart';
+import 'package:cloud_winpol_frontend/screens/admin/web/admin_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/user_detail_screen.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/customer_app_draver.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/service/customer_service.dart';
@@ -101,20 +101,6 @@ class _BranchListScreenState extends State<BranchlistMainScreen> {
                     },
                   ),
                   const SizedBox(width: 8),
-
-                  _actionButton(
-                    label: "Düzenle",
-                    icon: Icons.edit,
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/userInsertWeb',
-                        arguments: const CustomerArgs(
-                          action: CustomerAction.edit,
-                        ),
-                      );
-                    },
-                  ),
                 ],
               ),
 
@@ -183,7 +169,7 @@ class _BranchListScreenState extends State<BranchlistMainScreen> {
                               separatorBuilder: (_, __) =>
                                   const SizedBox(height: 6),
                               itemBuilder: (context, index) {
-                                return _userRow(
+                                return _branchRow(
                                   context,
                                   branches[index],
                                   index,
@@ -259,7 +245,7 @@ Widget _stickyHeader() {
   );
 }
 
-Widget _userRow(BuildContext context, BranchSummary branch, int index) {
+Widget _branchRow(BuildContext context, BranchSummary branch, int index) {
   final isEven = index % 2 == 0;
 
   return InkWell(
@@ -289,10 +275,29 @@ Widget _userRow(BuildContext context, BranchSummary branch, int index) {
           Expanded(flex: 2, child: Text(branch.mersisNo.toString() ?? "-")),
           Expanded(flex: 2, child: Text(branch.sehir ?? "-")),
           SizedBox(width: 60, child: _statusBadge(!(branch.isLocked ?? false))),
-          const SizedBox(
-            width: 24,
-            child: Icon(Icons.chevron_right, color: Colors.black38),
+          SizedBox(width: 40),
+
+          // buraya edit kısmı eklenecek customerAction.edit
+          SizedBox(
+            width: 20,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(Icons.edit, size: 18),
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/userInsertWeb',
+                    arguments: const CustomerArgs(action: CustomerAction.edit),
+                  );
+                },
+              ),
+            ),
           ),
+
+          SizedBox(width: 10),
         ],
       ),
     ),
@@ -377,6 +382,15 @@ Widget _userListHeader() {
             child: Text("Durum", style: TextStyle(fontWeight: FontWeight.w600)),
           ),
         ),
+        SizedBox(width: 40),
+        SizedBox(
+          width: 20,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Text("", style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+        ),
+
         SizedBox(width: 24),
       ],
     ),

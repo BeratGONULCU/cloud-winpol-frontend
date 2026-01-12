@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/models/user_summary.dart';
-import 'package:cloud_winpol_frontend/screens/mobile/admin_main_mobile.dart';
-import 'package:cloud_winpol_frontend/screens/web/admin_main_web.dart'
+import 'package:cloud_winpol_frontend/screens/admin/mobile/admin_main_mobile.dart';
+import 'package:cloud_winpol_frontend/screens/admin/web/admin_main_web.dart'
     hide UserPanel;
 import 'package:cloud_winpol_frontend/widgets/userPanel.dart';
 

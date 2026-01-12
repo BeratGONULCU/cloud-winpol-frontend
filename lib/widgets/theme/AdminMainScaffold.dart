@@ -1,4 +1,4 @@
-import 'package:cloud_winpol_frontend/screens/web/admin_main_web.dart';
+import 'package:cloud_winpol_frontend/screens/admin/web/admin_main_web.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cloud_winpol_frontend/models/customer_action.dart';

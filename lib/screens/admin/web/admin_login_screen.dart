@@ -1,4 +1,4 @@
-import 'package:cloud_winpol_frontend/screens/admin_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/admin/web/admin_main_screen.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/utils/show_pop.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';

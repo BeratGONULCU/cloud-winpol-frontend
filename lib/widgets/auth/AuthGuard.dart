@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/service/auth_storage.dart';
-import 'package:cloud_winpol_frontend/screens/customer_login_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/customer_login_screen.dart';
 
 class AuthGuard extends StatelessWidget {
   final Widget child;

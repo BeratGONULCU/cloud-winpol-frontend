@@ -1,18 +1,18 @@
-import 'package:cloud_winpol_frontend/screens/admin_main_screen.dart';
-import 'package:cloud_winpol_frontend/screens/customer_login_screen.dart';
-import 'package:cloud_winpol_frontend/screens/customer_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/admin/web/admin_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/customer_login_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/customer_main_screen.dart';
 import 'package:cloud_winpol_frontend/screens/web/customer_main_web.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_winpol_frontend/screens/admin_login_screen.dart';
-import 'package:cloud_winpol_frontend/screens/main_router_screen.dart';
-import 'package:cloud_winpol_frontend/screens/customer_home_screen.dart';
-import 'package:cloud_winpol_frontend/screens/customerList_main_screen.dart';
-import 'package:cloud_winpol_frontend/screens/userList_main_screen.dart';
-import 'package:cloud_winpol_frontend/screens/user_insert_screen.dart';
-import 'package:cloud_winpol_frontend/screens/branchList_main_screen.dart';
-import 'package:cloud_winpol_frontend/screens/mikroAPI_main_screen.dart';
-import 'package:cloud_winpol_frontend/screens/customer_register_screen.dart';
+import 'package:cloud_winpol_frontend/screens/admin/web/admin_login_screen.dart';
+import 'package:cloud_winpol_frontend/screens/admin/main_router_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/customer_home_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/customerList_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/userList_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/user_insert_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/branchList_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/mikroAPI_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/customer_register_screen.dart';
 
 void main() {
   runApp(const WinpolApp());

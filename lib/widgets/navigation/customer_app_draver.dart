@@ -117,13 +117,13 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                       children: [
                         _drawerItemWithDivider(
                           DrawerItem(
-                            title: "Şube Listesi",
+                            title: "Ürün Sorgulama",
                             icon: Icons.list_alt,
                             indent: 28,
-                            isActive: currentRoute == "/branchList",
+                            isActive: currentRoute == "/productQuery",
                             onTap: () {
                               Navigator.pop(context);
-                              Navigator.pushNamed(context, "/branchList");
+                              Navigator.pushNamed(context, "/productQuery");
                             },
                           ),
                         ),
@@ -222,7 +222,7 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                                 icon: Icons.key_outlined,
                                 indent: 28,
                               ),
-                              showDivider: false,
+                              showDivider: true,
                             ),
                           ],
                         ),
@@ -236,6 +236,42 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                             _drawerItemWithDivider(
                               DrawerItem(
                                 title: "Şube Listesi",
+                                icon: Icons.account_tree,
+                                indent: 28,
+                                isActive: currentRoute == "/branchList",
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.pushNamed(context, "/branchList");
+                                },
+                              ),
+                            ),
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Şube Kullanıcıları",
+                                icon: Icons.group,
+                                indent: 28,
+                              ),
+                              showDivider: true,
+                            ),
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Şube Raporları",
+                                icon: Icons.bar_chart,
+                                indent: 28,
+                              ),
+                              showDivider: true,
+                            ),
+                          ],
+                        ),
+
+                        DrawerSection(
+                          title: "Firma",
+                          icon: Icons.business,
+                          indent: 12,
+                          children: [
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Firma Bilgileri",
                                 icon: Icons.list_alt,
                                 indent: 28,
                                 isActive: currentRoute == "/branchList",
@@ -256,47 +292,43 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                           ],
                         ),
 
-                        // ===== DİĞER AYARLAR =====
-                        _drawerItemWithDivider(
-                          DrawerItem(
-                            title: "Firma",
-                            icon: Icons.business,
-                            indent: 28,
-                          ),
+
+                        DrawerSection(
+                          title: "Mikro API",
+                          icon: Icons.api,
+                          indent: 12,
+                          children: [
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Bağlantı Ayarları",
+                                icon: Icons.router,
+                                indent: 28,
+                                isActive: currentRoute == "/mikroAPI",
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.pushNamed(context, "/mikroAPI");
+                                },
+                              ),
+                            ),
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Şube Kullanıcıları",
+                                icon: Icons.bar_chart,
+                                indent: 28,
+                              ),
+                              showDivider: true,
+                            ),
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Şube Raporları",
+                                icon: Icons.bar_chart,
+                                indent: 28,
+                              ),
+                              showDivider: true,
+                            ),
+                          ],
                         ),
-                        _drawerItemWithDivider(
-                          DrawerItem(
-                            title: "Şubeler",
-                            icon: Icons.apartment,
-                            indent: 28,
-                          ),
-                        ),
-                        _drawerItemWithDivider(
-                          DrawerItem(
-                            title: "Depolar",
-                            icon: Icons.warehouse,
-                            indent: 28,
-                          ),
-                        ),
-                        _drawerItemWithDivider(
-                          DrawerItem(
-                            title: "Kullanıcı",
-                            icon: Icons.supervised_user_circle,
-                            indent: 28,
-                          ),
-                        ),
-                        _drawerItemWithDivider(
-                          DrawerItem(
-                            title: "Mikro API",
-                            icon: Icons.api,
-                            indent: 28,
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.pushNamed(context, "/mikroApi");
-                            },
-                          ),
-                          showDivider: false,
-                        ),
+                       
                       ],
                     ),
                     showDivider: !settingsExpanded,

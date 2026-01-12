@@ -62,7 +62,7 @@ class CustomerLoginService {
     required String vergiNo,
     required String username,
     required String password,
-    required String roleId,
+    String? roleId,
     String? longName,
     String? cepTel,
     String? email,
@@ -71,8 +71,11 @@ class CustomerLoginService {
       "vergi_no": vergiNo.trim(),
       "username": username.trim(),
       "password": password,
-      "role_id": roleId,
     };
+
+    if (roleId != null && roleId.trim().isNotEmpty) {
+      queryParams["role_id"] = roleId.trim();
+    }
 
     if (longName != null && longName.trim().isNotEmpty) {
       queryParams["longName"] = longName.trim();

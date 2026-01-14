@@ -75,8 +75,8 @@ class AppRouter {
               case '/branchList':
                 return const BranchlistMainScreen();
 
-              case '/mikroAPI':
-                return const MikroAPIMainScreen();
+              case '/mikroApiSettings':
+                return const MikroApiSettingsScreen();
 
               case '/settings':
                 return const SettingsScreen();

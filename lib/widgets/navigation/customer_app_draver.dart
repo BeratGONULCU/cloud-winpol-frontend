@@ -15,6 +15,9 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
   bool branchesExpanded = false;
   bool mikroExpanded = false;
   bool settingsExpanded = false;
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _mikroApiKey = GlobalKey();
+  final GlobalKey _mikroHeaderKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +30,7 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
             // ================== MENU ==================
             Expanded(
               child: ListView(
+                controller: _scrollController,
                 padding: const EdgeInsets.all(12),
                 physics: const BouncingScrollPhysics(),
                 children: [
@@ -60,8 +64,8 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                     DrawerSection(
                       title: "Fatura",
                       icon: Icons.people,
-                      onExpandedChanged: (v) =>
-                          setState(() => usersExpanded = v),
+                      autoScrollOnExpand: true,
+                      scrollController: _scrollController,
                       children: [
                         _drawerItemWithDivider(
                           DrawerItem(
@@ -112,12 +116,11 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                     DrawerSection(
                       title: "Ürünler",
                       icon: Icons.local_shipping,
-                      onExpandedChanged: (v) =>
-                          setState(() => branchesExpanded = v),
-                      children: [
+  autoScrollOnExpand: true,
+  scrollController: _scrollController,                      children: [
                         _drawerItemWithDivider(
                           DrawerItem(
-                            title: "Ürün Sorgulama",
+                            title: "Fiyat Sorgulama",
                             icon: Icons.list_alt,
                             indent: 28,
                             isActive: currentRoute == "/productQuery",
@@ -145,9 +148,8 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                     DrawerSection(
                       title: "Depolar",
                       icon: Icons.local_shipping,
-                      onExpandedChanged: (v) =>
-                          setState(() => branchesExpanded = v),
-                      children: [
+  autoScrollOnExpand: true,
+  scrollController: _scrollController,                      children: [
                         _drawerItemWithDivider(
                           DrawerItem(
                             title: "Şube Listesi",
@@ -177,13 +179,15 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                     DrawerSection(
                       title: "Ayarlar (Yönetim)",
                       icon: Icons.settings,
-                      onExpandedChanged: (v) =>
-                          setState(() => settingsExpanded = v),
+                      autoScrollOnExpand: true,
+                      scrollController: _scrollController,
                       children: [
                         // ===== KULLANICILAR (ALT SECTION) =====
                         DrawerSection(
                           title: "Kullanıcılar",
                           icon: Icons.people,
+                          autoScrollOnExpand: true,
+                          scrollController: _scrollController,
                           indent: 12,
                           children: [
                             _drawerItemWithDivider(
@@ -231,6 +235,8 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                         DrawerSection(
                           title: "Şubeler",
                           icon: Icons.local_shipping,
+                          autoScrollOnExpand: true,
+                          scrollController: _scrollController,
                           indent: 12,
                           children: [
                             _drawerItemWithDivider(
@@ -267,6 +273,8 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                         DrawerSection(
                           title: "Firma",
                           icon: Icons.business,
+                          autoScrollOnExpand: true,
+                          scrollController: _scrollController,
                           indent: 12,
                           children: [
                             _drawerItemWithDivider(
@@ -292,21 +300,40 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                           ],
                         ),
 
-
                         DrawerSection(
+                          key: _mikroHeaderKey,
                           title: "Mikro API",
                           icon: Icons.api,
                           indent: 12,
+                          autoScrollOnExpand: true,
+                          scrollController: _scrollController,
+
                           children: [
                             _drawerItemWithDivider(
                               DrawerItem(
+                                key: _mikroApiKey,
                                 title: "Bağlantı Ayarları",
                                 icon: Icons.router,
                                 indent: 28,
-                                isActive: currentRoute == "/mikroAPI",
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  Navigator.pushNamed(context, "/mikroAPI");
+                                isActive: currentRoute == "/mikroApiSettings",
+                                onTap: () async {
+                                  final context = _mikroApiKey.currentContext;
+                                  if (context != null) {
+                                    await Scrollable.ensureVisible(
+                                      context,
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      curve: Curves.easeInOut,
+                                      alignment: 0.5, // 👈 ORTA
+                                    );
+                                  }
+
+                                  Navigator.pop(context!);
+                                  Navigator.pushNamed(
+                                    context,
+                                    "/mikroApiSettings",
+                                  );
                                 },
                               ),
                             ),
@@ -328,7 +355,6 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                             ),
                           ],
                         ),
-                       
                       ],
                     ),
                     showDivider: !settingsExpanded,
@@ -438,16 +464,19 @@ class DrawerSection extends StatefulWidget {
   final String title;
   final IconData icon;
   final List<Widget> children;
-  final ValueChanged<bool>? onExpandedChanged;
   final double indent;
+
+  final bool autoScrollOnExpand;
+  final ScrollController? scrollController;
 
   const DrawerSection({
     super.key,
     required this.title,
     required this.icon,
     required this.children,
-    this.onExpandedChanged,
     this.indent = 0,
+    this.autoScrollOnExpand = false,
+    this.scrollController,
   });
 
   @override
@@ -456,19 +485,16 @@ class DrawerSection extends StatefulWidget {
 
 class _DrawerSectionState extends State<DrawerSection> {
   bool _expanded = false;
+  final GlobalKey _headerKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         ListTile(
+          key: _headerKey, // 👈 ARTIK HER SECTION KENDİ KEY’İNE SAHİP
           dense: true,
-          contentPadding: EdgeInsets.fromLTRB(
-            14 + widget.indent, 
-            2,
-            14,
-            2,
-          ),
+          contentPadding: EdgeInsets.fromLTRB(14 + widget.indent, 2, 14, 2),
           leading: Icon(widget.icon),
           title: Text(
             widget.title,
@@ -480,9 +506,25 @@ class _DrawerSectionState extends State<DrawerSection> {
             ),
           ),
           trailing: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-          onTap: () {
+          onTap: () async {
             setState(() => _expanded = !_expanded);
-            widget.onExpandedChanged?.call(_expanded);
+
+            if (_expanded &&
+                widget.autoScrollOnExpand &&
+                widget.scrollController != null) {
+              // AnimatedSize bitsin
+              await Future.delayed(const Duration(milliseconds: 200));
+
+              final ctx = _headerKey.currentContext;
+              if (ctx != null) {
+                Scrollable.ensureVisible(
+                  ctx,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  alignment: 0.5,
+                );
+              }
+            }
           },
         ),
 

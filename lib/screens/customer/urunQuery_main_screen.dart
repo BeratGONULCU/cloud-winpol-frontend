@@ -22,6 +22,48 @@ class UrunQueryMainScreenState extends State<UrunQueryMainScreen> {
   List<Map<String, dynamic>> _urunListesi = [];
   bool _loading = false;
   String? _error;
+  int? _mevcutStok;
+
+  // BASE MİKRO SQL FUNCTION
+  Future<void> _getStockByStokod() async {
+    final String arananDeger = _searchCtrl.text.trim();
+    if (arananDeger.isEmpty) return;
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final response = await MikroService.getStockByStoKod(
+        endpoint: 'SqlVeriOkuV2',
+        db_name: '1234567890', // ileride backend session’dan alınacak
+        body: {
+          "SQLSorgu":
+              """
+          "SELECT SUM(sth_miktar * CASE WHEN sth_evraktip IN (1,2,3) THEN 1 WHEN sth_evraktip IN (4,5,6) THEN -1 ELSE 0 END) AS mevcut_stok FROM STOK_HAREKETLERI WHERE sth_stok_kod = '$arananDeger' GROUP BY sth_stok_kod"
+        """,
+        },
+      );
+
+      final result = response['result']?[0];
+      final data = result?['Data']?[0]?['SQLResult1'];
+
+      setState(() {
+        _mevcutStok = (data != null && data.isNotEmpty)
+            ? (data.first['mevcut_stok'] ?? 0)
+            : 0;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
 
   Future<void> _urunSorgula() async {
     final String arananDeger = _searchCtrl.text.trim();
@@ -39,9 +81,10 @@ class UrunQueryMainScreenState extends State<UrunQueryMainScreen> {
     });
 
     try {
-      final response = await MikroService.connectToMikro(
+      final response = await MikroService.connectMikroWithBody(
         endpoint: 'SqlVeriOkuV2',
-        db_name: '1234567890',
+        db_name:
+            '1234567890', // bu değer backend içerisinde session (get_tenant_db) ile alınmalı
         body: {
           "SQLSorgu":
               """
@@ -199,11 +242,23 @@ class UrunQueryMainScreenState extends State<UrunQueryMainScreen> {
                               color: Colors.green.withOpacity(0.12),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: const Text(
-                              "STOKTA · ... ADET",
-                              style: TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.w600,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                _mevcutStok != null
+                                    ? "STOKTA · $_mevcutStok ADET"
+                                    : "STOK BİLGİSİ YOK",
+                                style: const TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
@@ -239,12 +294,18 @@ class UrunQueryMainScreenState extends State<UrunQueryMainScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: _actionButton(
+                    child: _actionButton2(
                       label: "Miktar Detay",
                       icon: Icons.inventory_2_outlined,
                       primary: false,
+                      onTap: () {
+                        if (_urunListesi.isEmpty) return;
+
+                        _getStockByStokod();
+                      },
                     ),
                   ),
+
                   const SizedBox(width: 16),
                   Expanded(
                     child: _actionButton(
@@ -276,6 +337,53 @@ Widget _actionButton({
   return InkWell(
     borderRadius: BorderRadius.circular(16),
     onTap: () {},
+    child: Container(
+      height: 56,
+      decoration: BoxDecoration(
+        color: primary ? const Color(0xFF065186) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: primary ? Colors.transparent : const Color(0xFFC9D6E2),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (icon != null)
+            Icon(icon, color: primary ? Colors.white : Colors.black54),
+          if (iconText != null)
+            Text(
+              iconText,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: primary ? Colors.white : Colors.black54,
+              ),
+            ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: primary ? Colors.white : Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _actionButton2({
+  required String label,
+  IconData? icon,
+  String? iconText,
+  required bool primary,
+  VoidCallback? onTap,
+}) {
+  return InkWell(
+    borderRadius: BorderRadius.circular(16),
+    onTap: onTap,
     child: Container(
       height: 56,
       decoration: BoxDecoration(

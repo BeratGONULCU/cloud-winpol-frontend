@@ -40,7 +40,7 @@ class WinpolApp extends StatelessWidget {
         '/userList': (_) => const UserlistMainScreen(),
         '/userInsertWeb': (_) => const userInsertScreen(),
         '/branchList': (_) => const BranchlistMainScreen(),
-        '/mikroAPI': (_) => const MikroAPIMainScreen(),
+        '/mikroApiSettings': (_) => const MikroApiSettingsScreen(),
         '/customerRegister': (_) => const CustomerRegisterScreen(),
         '/productQuery': (_) => const UrunQueryMainScreen(),
       },

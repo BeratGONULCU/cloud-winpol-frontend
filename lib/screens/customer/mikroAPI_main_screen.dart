@@ -1,345 +1,353 @@
-import 'package:cloud_winpol_frontend/models/admin_main_args.dart';
-import 'package:cloud_winpol_frontend/models/branch_main_args.dart';
-import 'package:cloud_winpol_frontend/models/branch_summary.dart';
-import 'package:cloud_winpol_frontend/models/customer_action.dart';
-import 'package:cloud_winpol_frontend/models/customer_main_args.dart';
-import 'package:cloud_winpol_frontend/screens/admin/web/admin_main_screen.dart';
-import 'package:cloud_winpol_frontend/screens/customer/user_detail_screen.dart';
-import 'package:cloud_winpol_frontend/widgets/navigation/customer_app_draver.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_winpol_frontend/service/customer_service.dart';
-import 'package:cloud_winpol_frontend/models/user_summary.dart';
+import 'package:flutter/services.dart';
+import 'package:cloud_winpol_frontend/widgets/navigation/customer_app_draver.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
-import 'package:cloud_winpol_frontend/models/branch_summary.dart';
 
-class MikroAPIMainScreen extends StatefulWidget {
-  static const String routeName = '/mikroAPI';
+class MikroApiSettingsScreen extends StatefulWidget {
+  static const String routeName = '/mikroApiSettings';
 
-  const MikroAPIMainScreen({super.key});
+  const MikroApiSettingsScreen({super.key});
 
   @override
-  State<MikroAPIMainScreen> createState() => _MikroAPIScreenState();
+  State<MikroApiSettingsScreen> createState() =>
+      _MikroApiSettingsScreenState();
 }
 
-class _MikroAPIScreenState extends State<MikroAPIMainScreen> {
+class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  bool loading = true;
-  String? error;
+  final _ipCtrl = TextEditingController();
+  final _portCtrl = TextEditingController();
+  final _firmaKoduCtrl = TextEditingController();
+  final _calismaYiliCtrl = TextEditingController(text: "2025");
+  final _kullaniciCtrl = TextEditingController();
+  final _sifreCtrl = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
+  final _apiKeyCtrl = TextEditingController();
+  final _firmaNoCtrl = TextEditingController();
+  final _subeNoCtrl = TextEditingController();
+
+  bool _loading = false;
+  bool _showPassword = false;
+
+  Future<void> _kaydet() async {
+    setState(() => _loading = true);
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => _loading = false);
   }
-  
 
+  Future<void> _testEt() async {
+    setState(() => _loading = true);
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => _loading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 700;
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.body,
       drawer: const CustomerAppDrawer(),
       appBar: WinpolHeader(
-        title: "Şube Listesi",
-        showLogo: false,
+        title: "Mikro API Ayarları",
         onBack: null,
         onMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onSettings: () =>
             Navigator.pushNamed(context, SettingsScreen.routeName),
       ),
-      body: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1400),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ================= TOP BAR =================
-              Row(
-                children: [
-                  Text(
-                    "Mikro API Ayarlar",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  _refreshButton(),
-                  const SizedBox(width: 8),
-                  _actionButton(
-                    label: "Ekle",
-                    icon: Icons.add,
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/userInsertWeb',
-                        arguments: const CustomerArgs(
-                          action: CustomerAction.create,
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 8),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isMobile = constraints.maxWidth < 700;
 
-                  _actionButton(
-                    label: "Düzenle",
-                    icon: Icons.edit,
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        '/userInsertWeb',
-                        arguments: const CustomerArgs(
-                          action: CustomerAction.edit,
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // ================= TABLO =================
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.black12),
-                  ),
-                  child: Column(
-                    children: [
-                      if (!isMobile) _stickyHeader(),
-                      if (!isMobile) const SizedBox(height: 8),
-
-                      Expanded(
-                        child: Builder(
-                          builder: (_) {
-                            // LOADING
-                            if (loading) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-
-                            // ERROR (AMA TABLO DURUYOR)
-                            if (error != null) {
-                              return Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.warning_amber_rounded,
-                                    color: Colors.red.withOpacity(0.7),
-                                    size: 36,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    "Herhangi Bir Şube Bulunamadı!",
-                                    style: TextStyle(
-                                      color: Colors.red.withOpacity(0.8),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }
-
-                            return const SizedBox.expand(); // bu geçici silinecek
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+          return SingleChildScrollView(
+            physics: isMobile
+                ? const BouncingScrollPhysics()
+                : const NeverScrollableScrollPhysics(),
+            child: Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 1200),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    _buildFormCard(isMobile),
+                    const SizedBox(height: 24),
+                    _buildActionBar(isMobile),
+                  ],
                 ),
               ),
-            ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ================= FORM =================
+
+  Widget _buildFormCard(bool isMobile) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 20,
           ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Bağlantı Bilgileri",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 20),
+
+          if (isMobile) ..._mobileForm(),
+          if (!isMobile) ..._desktopForm(),
+
+          if (_loading)
+            const Padding(
+              padding: EdgeInsets.only(top: 16),
+              child: CircularProgressIndicator(),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ================= MOBILE FORM =================
+
+  List<Widget> _mobileForm() => [
+        _inputRow("Mikro IP / Host", _ipCtrl,
+            requiredField: true, isIp: true),
+        _gap(),
+        _inputRow("Port", _portCtrl,
+            requiredField: true, isNumber: true),
+        _gap(),
+        _inputRow("Firma Kodu", _firmaKoduCtrl,
+            requiredField: true),
+        _gap(),
+        _inputRow("Çalışma Yılı", _calismaYiliCtrl,
+            requiredField: true, isNumber: true),
+        _gap(),
+        _inputRow("Kullanıcı", _kullaniciCtrl,
+            requiredField: true),
+        _gap(),
+        _passwordInput(),
+        _gap(),
+        _inputRow("Firma No", _firmaNoCtrl,
+            isNumber: true),
+        _gap(),
+        SizedBox(width: 60,),
+        _inputRow("API Key", _apiKeyCtrl,
+            maxLength: 255),
+        _gap(),
+        _inputRow("Şube No", _subeNoCtrl,
+            isNumber: true),
+      ];
+
+  // ================= DESKTOP FORM =================
+
+  List<Widget> _desktopForm() => [
+        _row(
+          _inputRow("Mikro IP / Host", _ipCtrl,
+              requiredField: true, isIp: true),
+          _inputRow("Port", _portCtrl,
+              requiredField: true, isNumber: true),
         ),
+        _row(
+          _inputRow("Firma Kodu", _firmaKoduCtrl,
+              requiredField: true),
+          _inputRow("Çalışma Yılı", _calismaYiliCtrl,
+              requiredField: true, isNumber: true),
+        ),
+        _row(
+          _inputRow("Kullanıcı", _kullaniciCtrl,
+              requiredField: true),
+          _passwordInput(),
+        ),
+        _row(
+          _inputRow("Firma No", _firmaNoCtrl,
+              isNumber: true),
+          _inputRow("API Key", _apiKeyCtrl,
+              maxLength: 255),
+        ),
+        _row(
+          _inputRow("Şube No", _subeNoCtrl,
+              isNumber: true),
+          const SizedBox(),
+        ),
+      ];
+
+  // ================= ACTION BAR =================
+
+  Widget _buildActionBar(bool isMobile) {
+    if (isMobile) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _dangerButton("Sil", Icons.delete, _testEt),
+          const SizedBox(height: 12),
+          _normalButton("Bağlantı Testi", Icons.wifi_tethering, _testEt),
+          const SizedBox(height: 12),
+          _primaryButton("Kaydet", Icons.save, _kaydet),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        const Spacer(),
+        Expanded(child: _dangerButton("Sil", Icons.delete, _testEt)),
+        const SizedBox(width: 16),
+        Expanded(
+            child: _normalButton(
+                "Bağlantı Testi", Icons.wifi_tethering, _testEt)),
+        const SizedBox(width: 16),
+        Expanded(child: _primaryButton("Kaydet", Icons.save, _kaydet)),
+      ],
+    );
+  }
+
+  // ================= INPUT HELPERS =================
+
+  Widget _passwordInput() {
+    return _inputRow(
+      "Şifre",
+      _sifreCtrl,
+      obscure: true,
+      requiredField: true,
+      suffix: IconButton(
+        icon: Icon(
+          _showPassword ? Icons.visibility_off : Icons.visibility,
+        ),
+        onPressed: () => setState(() => _showPassword = !_showPassword),
       ),
     );
   }
 }
 
-/* ========================================================= */
-/* ======================= WIDGETS ========================= */
-/* ========================================================= */
+/* ================= HELPERS ================= */
 
-Widget _refreshButton() {
-  return InkWell(
-    borderRadius: BorderRadius.circular(10),
-    onTap: () {},
-    child: Container(
-      width: 35,
-      height: 35,
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(236, 7, 86, 143),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: const Icon(Icons.refresh, size: 18, color: Colors.white),
+Widget _gap() => const SizedBox(height: 14);
+
+Widget _row(Widget left, Widget right) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 14),
+    child: Row(
+      children: [
+        Expanded(child: left),
+        const SizedBox(width: 16),
+        Expanded(child: right),
+      ],
     ),
   );
 }
 
-Widget _actionButton({
-  required String label,
-  required IconData icon,
-  required VoidCallback onTap,
+Widget _inputRow(
+  String label,
+  TextEditingController controller, {
+  bool isNumber = false,
+  bool obscure = false,
+  bool requiredField = false,
+  bool isIp = false,
+  int? maxLength,
+  Widget? suffix,
+}) {
+  return TextField(
+    controller: controller,
+    obscureText: obscure,
+    keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+    inputFormatters: [
+      if (isNumber && !isIp) FilteringTextInputFormatter.digitsOnly,
+      if (isIp) FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+    ],
+    maxLength: maxLength,
+    decoration: InputDecoration(
+      label: RichText(
+        text: TextSpan(
+          text: label,
+          style: const TextStyle(color: Colors.black87),
+          children: [
+            if (requiredField)
+              const TextSpan(
+                text: " *",
+                style: TextStyle(color: Colors.red),
+              ),
+          ],
+        ),
+      ),
+      suffixIcon: suffix,
+      filled: true,
+      fillColor: const Color(0xFFF7F9FC),
+      isDense: true,
+      counterText:
+          maxLength != null ? "${controller.text.length}/$maxLength" : null,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF065186)),
+      ),
+    ),
+  );
+}
+
+/* ================= BUTTONS ================= */
+
+Widget _primaryButton(String label, IconData icon, VoidCallback onTap) =>
+    _baseButton(label, icon, onTap, const Color(0xFF065186));
+
+Widget _normalButton(String label, IconData icon, VoidCallback onTap) =>
+    _baseButton(label, icon, onTap, Colors.white,
+        borderColor: const Color(0xFFC9D6E2),
+        textColor: Colors.black87);
+
+Widget _dangerButton(String label, IconData icon, VoidCallback onTap) =>
+    _baseButton(label, icon, onTap,
+        const Color.fromARGB(255, 205, 14, 14));
+
+Widget _baseButton(
+  String label,
+  IconData icon,
+  VoidCallback onTap,
+  Color bgColor, {
+  Color? borderColor,
+  Color textColor = Colors.white,
 }) {
   return InkWell(
+    borderRadius: BorderRadius.circular(16),
     onTap: onTap,
-    borderRadius: BorderRadius.circular(10),
     child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      height: 40,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black12),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+        border:
+            borderColor != null ? Border.all(color: borderColor) : null,
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 16),
-          const SizedBox(width: 6),
-          Text(label, style: const TextStyle(fontSize: 13)),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget _stickyHeader() {
-  return Material(
-    elevation: 2,
-    borderRadius: BorderRadius.circular(12),
-    child: _userListHeader(),
-  );
-}
-
-Widget _userRow(BuildContext context, BranchSummary branch, int index) {
-  final isEven = index % 2 == 0;
-
-  return InkWell(
-    borderRadius: BorderRadius.circular(12),
-    onTap: () {
-      Navigator.pushNamed(
-        context,
-        '/userInsertWeb',
-        arguments: BranchArgs(
-          action: CustomerAction.edit,
-          branch: branch, // SADECE BURADA user VAR
-        ),
-      );
-    },
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      decoration: BoxDecoration(
-        color: isEven ? Colors.white : const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black12),
-      ),
-      child: Row(
-        children: [
-          Expanded(flex: 3, child: Text(branch.subeNo.toString())),
-          Expanded(flex: 3, child: Text(branch.name!)),
-          Expanded(flex: 2, child: Text(branch.code ?? "-")),
-          Expanded(flex: 2, child: Text(branch.mersisNo.toString() ?? "-")),
-          Expanded(flex: 2, child: Text(branch.sehir ?? "-")),
-          SizedBox(width: 60, child: _statusBadge(!(branch.isLocked ?? false))),
-          const SizedBox(
-            width: 24,
-            child: Icon(Icons.chevron_right, color: Colors.black38),
+          Icon(icon, color: textColor),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
           ),
         ],
       ),
-    ),
-  );
-}
-
-Widget _statusBadge(bool active) {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-    decoration: BoxDecoration(
-      color: active
-          ? Colors.green.withOpacity(0.15)
-          : Colors.red.withOpacity(0.15),
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Text(
-      active ? "Aktif" : "Pasif",
-      style: TextStyle(fontSize: 12, color: active ? Colors.green : Colors.red),
-    ),
-  );
-}
-
-/*
-
-        children: [
-          Expanded(flex: 3, child: Text(branch.subeNo.toString())),
-          Expanded(flex: 3, child: Text(branch.name!)),
-          Expanded(flex: 2, child: Text(branch.code ?? "-")),
-          Expanded(flex: 2, child: Text(branch.mersisNo.toString() ?? "-")),
-          Expanded(flex: 2, child: Text(branch.sehir ?? "-")),
-          SizedBox(width: 60, child: _statusBadge(!(branch.isLocked ?? false))),
-          const SizedBox(
-            width: 24,
-            child: Icon(Icons.chevron_right, color: Colors.black38),
-          ),
-        ],
-         */
-
-Widget _userListHeader() {
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: Colors.black12),
-    ),
-    child: const Row(
-      children: [
-        Expanded(
-          flex: 1,
-          child: Text("Şube No", style: TextStyle(fontWeight: FontWeight.w600)),
-        ),
-        Expanded(
-          flex: 3,
-          child: Text(
-            "Şube Adı",
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-        Expanded(
-          flex: 1,
-          child: Text(
-            "Şube Kodu",
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-        Expanded(
-          flex: 3,
-          child: Text(
-            "Şube Mersis No",
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-        Expanded(
-          flex: 2,
-          child: Text("Şehir", style: TextStyle(fontWeight: FontWeight.w600)),
-        ),
-        SizedBox(
-          width: 60,
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Text("Durum", style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-        ),
-        SizedBox(width: 24),
-      ],
     ),
   );
 }

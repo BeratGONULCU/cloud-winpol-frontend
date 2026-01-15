@@ -45,7 +45,6 @@ class _UserListScreenState extends State<UserlistMainScreen> {
       });
     }
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +102,11 @@ class _UserListScreenState extends State<UserlistMainScreen> {
                       ),
                       const Spacer(),
 
-                      _refreshButton(),
+                      _refreshButton(
+                        onTap: () {
+                          _loadUsers();
+                        },
+                      ),
 
                       const SizedBox(width: 8),
                       _actionButton(
@@ -121,7 +124,6 @@ class _UserListScreenState extends State<UserlistMainScreen> {
                       ),
 
                       const SizedBox(width: 8),
-                      
                     ],
                   ),
 
@@ -172,10 +174,10 @@ class _UserListScreenState extends State<UserlistMainScreen> {
 /* ======================= WIDGETS ========================= */
 /* ========================================================= */
 
-Widget _refreshButton() {
+Widget _refreshButton({required VoidCallback onTap}) {
   return InkWell(
     borderRadius: BorderRadius.circular(10),
-    onTap: () {},
+    onTap: onTap,
     child: Container(
       width: 35,
       height: 35,

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:cloud_winpol_frontend/models/branch_summary.dart';
+import 'package:cloud_winpol_frontend/models/branch_summary_old.dart';
 import 'package:cloud_winpol_frontend/models/customer_summary.dart';
 import 'package:cloud_winpol_frontend/models/user_summary.dart';
 import 'package:cloud_winpol_frontend/service/api_client.dart';

@@ -1,8 +1,8 @@
-import 'package:cloud_winpol_frontend/models/branch_summary.dart';
-import 'package:cloud_winpol_frontend/models/customer_action.dart';
+import 'package:cloud_winpol_frontend/models/branch_action.dart';
+import 'package:cloud_winpol_frontend/models/branch_summary_old.dart';
 
 class BranchArgs {
-  final CustomerAction action; // aynı işlemler
+  final BranchAction action; // aynı işlemler
   final BranchSummary? branch;
 
   const BranchArgs({

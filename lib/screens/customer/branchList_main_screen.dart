@@ -1,10 +1,12 @@
 import 'package:cloud_winpol_frontend/models/admin_main_args.dart';
+import 'package:cloud_winpol_frontend/models/branch_action.dart';
 import 'package:cloud_winpol_frontend/models/branch_main_args.dart';
-import 'package:cloud_winpol_frontend/models/branch_summary.dart';
+import 'package:cloud_winpol_frontend/models/branch_summary_old.dart';
 import 'package:cloud_winpol_frontend/models/customer_action.dart';
 import 'package:cloud_winpol_frontend/models/customer_main_args.dart';
 import 'package:cloud_winpol_frontend/screens/admin/web/admin_main_screen.dart';
 import 'package:cloud_winpol_frontend/screens/customer/user_detail_screen.dart';
+import 'package:cloud_winpol_frontend/service/mikro_connection_service.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/customer_app_draver.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/service/customer_service.dart';
@@ -26,7 +28,7 @@ class BranchlistMainScreen extends StatefulWidget {
 class _BranchListScreenState extends State<BranchlistMainScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  List<BranchSummary> branches = [];
+  List<BranchReportSummary> branches = [];
   bool loading = true;
   String? error;
 
@@ -36,16 +38,51 @@ class _BranchListScreenState extends State<BranchlistMainScreen> {
     _loadbranches();
   }
 
+  /* ========================================================= */
+  /* ===================== SUBELER SQL ======================= */
+  /* ========================================================= */
+
   Future<void> _loadbranches() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+
     try {
-      final data = await CustomerService.getAllBranchesBySession();
+      final response = await MikroService.connectMikroWithBody(
+        endpoint: 'SqlVeriOkuV2',
+        db_name: '1234567890',
+        body: {
+          "SQLSorgu": """
+           SELECT Sube_no AS [Şube No], Sube_adi AS [Şube Adı], sube_TelNo1 AS [Telefon], sube_Cadde AS [Cadde], sube_Mahalle AS [Mahalle], sube_Sokak AS [Sokak], sube_Apt_No AS [Apt. No], sube_Ilce AS [İlçe], sube_Il AS [Şehir], sube_Ulke AS [Ülke] FROM SUBELER
+          """,
+        },
+      );
+
+      final result = response['result']?[0];
+      final data = result?['Data']?[0]?['SQLResult1'];
+
+      if (data == null) {
+        setState(() {
+          branches = [];
+        });
+        return;
+      }
+
+      // SQL →  BranchReportSummary
+      final List<BranchReportSummary> parsed = List<Map<String, dynamic>>.from(
+        data,
+      ).map((e) => BranchReportSummary.fromJson(e)).toList();
+
       setState(() {
-        branches = data;
-        loading = false;
+        branches = parsed;
       });
     } catch (e) {
       setState(() {
         error = e.toString();
+      });
+    } finally {
+      setState(() {
         loading = false;
       });
     }
@@ -85,7 +122,11 @@ class _BranchListScreenState extends State<BranchlistMainScreen> {
                     ),
                   ),
                   const Spacer(),
-                  _refreshButton(),
+                  _refreshButton(
+                    onTap: () {
+                      _loadbranches();
+                    },
+                  ),
                   const SizedBox(width: 8),
                   _actionButton(
                     label: "Ekle",
@@ -93,9 +134,9 @@ class _BranchListScreenState extends State<BranchlistMainScreen> {
                     onTap: () {
                       Navigator.pushNamed(
                         context,
-                        '/userInsertWeb',
-                        arguments: const CustomerArgs(
-                          action: CustomerAction.create,
+                        '/branchInsertWeb',
+                        arguments: const BranchArgs(
+                          action: BranchAction.create,
                         ),
                       );
                     },
@@ -163,7 +204,7 @@ class _BranchListScreenState extends State<BranchlistMainScreen> {
                               );
                             }
 
-                            // 4️⃣ DATA
+                            // DATA
                             return ListView.separated(
                               itemCount: branches.length,
                               separatorBuilder: (_, __) =>
@@ -195,10 +236,10 @@ class _BranchListScreenState extends State<BranchlistMainScreen> {
 /* ======================= WIDGETS ========================= */
 /* ========================================================= */
 
-Widget _refreshButton() {
+Widget _refreshButton({required VoidCallback onTap}) {
   return InkWell(
     borderRadius: BorderRadius.circular(10),
-    onTap: () {},
+    onTap: onTap,
     child: Container(
       width: 35,
       height: 35,
@@ -245,61 +286,23 @@ Widget _stickyHeader() {
   );
 }
 
-Widget _branchRow(BuildContext context, BranchSummary branch, int index) {
+Widget _branchRow(BuildContext context, BranchReportSummary branch, int index) {
   final isEven = index % 2 == 0;
 
-  return InkWell(
-    borderRadius: BorderRadius.circular(12),
-    onTap: () {
-      Navigator.pushNamed(
-        context,
-        '/userInsertWeb',
-        arguments: BranchArgs(
-          action: CustomerAction.edit,
-          branch: branch, // SADECE BURADA user VAR
-        ),
-      );
-    },
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      decoration: BoxDecoration(
-        color: isEven ? Colors.white : const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black12),
-      ),
-      child: Row(
-        children: [
-          Expanded(flex: 3, child: Text(branch.subeNo.toString())),
-          Expanded(flex: 3, child: Text(branch.name!)),
-          Expanded(flex: 2, child: Text(branch.code ?? "-")),
-          Expanded(flex: 2, child: Text(branch.mersisNo.toString() ?? "-")),
-          Expanded(flex: 2, child: Text(branch.sehir ?? "-")),
-          SizedBox(width: 60, child: _statusBadge(!(branch.isLocked ?? false))),
-          SizedBox(width: 40),
-
-          // buraya edit kısmı eklenecek customerAction.edit
-          SizedBox(
-            width: 20,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: const Icon(Icons.edit, size: 18),
-                onPressed: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/userInsertWeb',
-                    arguments: const CustomerArgs(action: CustomerAction.edit),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          SizedBox(width: 10),
-        ],
-      ),
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+    decoration: BoxDecoration(
+      color: isEven ? Colors.white : const Color(0xFFF9FAFB),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.black12),
+    ),
+    child: Row(
+      children: [
+        Expanded(flex: 1, child: Text(branch.subeNo?.toString() ?? "-")),
+        Expanded(flex: 3, child: Text(branch.name ?? "-")),
+        Expanded(flex: 2, child: Text(branch.telefon ?? "-")),
+        Expanded(flex: 2, child: Text(branch.sehir ?? "-")),
+      ],
     ),
   );
 }
@@ -358,40 +361,13 @@ Widget _userListHeader() {
           ),
         ),
         Expanded(
-          flex: 1,
-          child: Text(
-            "Şube Kodu",
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-        Expanded(
-          flex: 3,
-          child: Text(
-            "Şube Mersis No",
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
+          flex: 2,
+          child: Text("Telefon", style: TextStyle(fontWeight: FontWeight.w600)),
         ),
         Expanded(
           flex: 2,
           child: Text("Şehir", style: TextStyle(fontWeight: FontWeight.w600)),
         ),
-        SizedBox(
-          width: 60,
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Text("Durum", style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-        ),
-        SizedBox(width: 40),
-        SizedBox(
-          width: 20,
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Text("", style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-        ),
-
-        SizedBox(width: 24),
       ],
     ),
   );

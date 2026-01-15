@@ -81,6 +81,8 @@ class UrunQueryMainScreenState extends State<UrunQueryMainScreen> {
     });
 
     try {
+      print("işte bu be");
+
       final response = await MikroService.connectMikroWithBody(
         endpoint: 'SqlVeriOkuV2',
         db_name:
@@ -96,6 +98,8 @@ class UrunQueryMainScreenState extends State<UrunQueryMainScreen> {
         """,
         },
       );
+        print("işte bu be2");
+
 
       // Mikro response parse
       final result = response['result']?[0];
@@ -103,6 +107,7 @@ class UrunQueryMainScreenState extends State<UrunQueryMainScreen> {
 
       setState(() {
         _urunListesi = List<Map<String, dynamic>>.from(data ?? []);
+        print(_urunListesi);
       });
     } catch (e) {
       setState(() {

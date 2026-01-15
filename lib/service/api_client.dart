@@ -16,13 +16,24 @@ class ApiClient {
     );
   }
 
-  static Future<http.Response> post(
-    Uri url, {
-    Object? body,
-  }) async {
+  static Future<http.Response> post(Uri url, {Object? body}) async {
     final token = await AuthStorage.getToken();
 
     return _client.post(
+      url,
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        if (token != null) "Authorization": "Bearer $token",
+      },
+      body: body,
+    );
+  }
+
+  static Future<http.Response> put(Uri url, {Object? body}) async {
+    final token = await AuthStorage.getToken();
+
+    return _client.put(
       url,
       headers: {
         "Accept": "application/json",

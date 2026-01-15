@@ -1,3 +1,5 @@
+import 'package:cloud_winpol_frontend/models/mikroAPI_summary.dart';
+import 'package:cloud_winpol_frontend/service/mikro_connection_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/customer_app_draver.dart';
@@ -11,13 +13,13 @@ class MikroApiSettingsScreen extends StatefulWidget {
   const MikroApiSettingsScreen({super.key});
 
   @override
-  State<MikroApiSettingsScreen> createState() =>
-      _MikroApiSettingsScreenState();
+  State<MikroApiSettingsScreen> createState() => _MikroApiSettingsScreenState();
 }
 
 class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  MikroApiSummary? _mikroInfo;
   final _ipCtrl = TextEditingController();
   final _portCtrl = TextEditingController();
   final _firmaKoduCtrl = TextEditingController();
@@ -34,14 +36,72 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
 
   Future<void> _kaydet() async {
     setState(() => _loading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _loading = false);
+
+    try {
+      await MikroService.pushMikroInfo(
+        apiIp: _ipCtrl.text.trim(),
+        apiPort: int.parse(_portCtrl.text),
+        apiProtocol: "http",
+        apiFirmaKodu: _firmaKoduCtrl.text.trim(),
+        apiCalismaYili: _calismaYiliCtrl.text.trim(),
+        apiKullanici: _kullaniciCtrl.text.trim(),
+        apiPw: _sifreCtrl.text.trim(), // boşsa gönderilmez
+        apiKey: _apiKeyCtrl.text.trim(),
+        apiFirmaNo: _firmaNoCtrl.text.trim(),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Mikro API bilgileri güncellendi")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      setState(() => _loading = false);
+    }
   }
 
   Future<void> _testEt() async {
     setState(() => _loading = true);
     await Future.delayed(const Duration(seconds: 1));
     setState(() => _loading = false);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMikroInfo();
+  }
+
+  Future<void> _loadMikroInfo() async {
+    setState(() => _loading = true);
+
+    try {
+      final list = await MikroService.getMikroInfo();
+
+      if (list.isNotEmpty) {
+        final data = list.first;
+        _mikroInfo = data;
+
+        _ipCtrl.text = data.ip;
+        _portCtrl.text = data.port.toString();
+        _firmaKoduCtrl.text = data.firmaKodu;
+        _calismaYiliCtrl.text = data.calismaYili;
+        _kullaniciCtrl.text = data.kullanici ?? "";
+        _sifreCtrl.text = ""; // HASH geri basılmaz
+        _apiKeyCtrl.text = data.apiKey ?? "";
+        _firmaNoCtrl.text = data.firmaNo ?? "";
+        _subeNoCtrl.text = ""; // tablo yoksa boş bırak
+      }
+    } catch (e) {
+      debugPrint("Mikro API Info load error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Mikro API bilgileri alınamadı")),
+      );
+    } finally {
+      setState(() => _loading = false);
+    }
   }
 
   @override
@@ -93,17 +153,14 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 20,
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Bağlantı Bilgileri",
+            "Mikro API Bağlantı Bilgileri",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 20),
@@ -124,66 +181,57 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
   // ================= MOBILE FORM =================
 
   List<Widget> _mobileForm() => [
-        _inputRow("Mikro IP / Host", _ipCtrl,
-            requiredField: true, isIp: true),
-        _gap(),
-        _inputRow("Port", _portCtrl,
-            requiredField: true, isNumber: true),
-        _gap(),
-        _inputRow("Firma Kodu", _firmaKoduCtrl,
-            requiredField: true),
-        _gap(),
-        _inputRow("Çalışma Yılı", _calismaYiliCtrl,
-            requiredField: true, isNumber: true),
-        _gap(),
-        _inputRow("Kullanıcı", _kullaniciCtrl,
-            requiredField: true),
-        _gap(),
-        _passwordInput(),
-        _gap(),
-        _inputRow("Firma No", _firmaNoCtrl,
-            isNumber: true),
-        _gap(),
-        SizedBox(width: 60,),
-        _inputRow("API Key", _apiKeyCtrl,
-            maxLength: 255),
-        _gap(),
-        _inputRow("Şube No", _subeNoCtrl,
-            isNumber: true),
-      ];
+    _inputRow("Mikro IP / Host", _ipCtrl, requiredField: true, isIp: true),
+    _gap(),
+    _inputRow("Port", _portCtrl, requiredField: true, isNumber: true),
+    _gap(),
+    _inputRow("Firma Kodu", _firmaKoduCtrl, requiredField: true),
+    _gap(),
+    _inputRow(
+      "Çalışma Yılı",
+      _calismaYiliCtrl,
+      requiredField: true,
+      isNumber: true,
+    ),
+    _gap(),
+    _inputRow("Kullanıcı", _kullaniciCtrl, requiredField: true),
+    _gap(),
+    _passwordInput(),
+    _gap(),
+    _inputRow("Firma No", _firmaNoCtrl, isNumber: true),
+    _gap(),
+    SizedBox(width: 60),
+    _inputRow("API Key", _apiKeyCtrl, maxLength: 255),
+    _gap(),
+    _inputRow("Şube No", _subeNoCtrl, isNumber: true),
+  ];
 
   // ================= DESKTOP FORM =================
 
   List<Widget> _desktopForm() => [
-        _row(
-          _inputRow("Mikro IP / Host", _ipCtrl,
-              requiredField: true, isIp: true),
-          _inputRow("Port", _portCtrl,
-              requiredField: true, isNumber: true),
-        ),
-        _row(
-          _inputRow("Firma Kodu", _firmaKoduCtrl,
-              requiredField: true),
-          _inputRow("Çalışma Yılı", _calismaYiliCtrl,
-              requiredField: true, isNumber: true),
-        ),
-        _row(
-          _inputRow("Kullanıcı", _kullaniciCtrl,
-              requiredField: true),
-          _passwordInput(),
-        ),
-        _row(
-          _inputRow("Firma No", _firmaNoCtrl,
-              isNumber: true),
-          _inputRow("API Key", _apiKeyCtrl,
-              maxLength: 255),
-        ),
-        _row(
-          _inputRow("Şube No", _subeNoCtrl,
-              isNumber: true),
-          const SizedBox(),
-        ),
-      ];
+    _row(
+      _inputRow("Mikro IP / Host", _ipCtrl, requiredField: true, isIp: true),
+      _inputRow("Port", _portCtrl, requiredField: true, isNumber: true),
+    ),
+    _row(
+      _inputRow("Firma Kodu", _firmaKoduCtrl, requiredField: true),
+      _inputRow(
+        "Çalışma Yılı",
+        _calismaYiliCtrl,
+        requiredField: true,
+        isNumber: true,
+      ),
+    ),
+    _row(
+      _inputRow("Kullanıcı", _kullaniciCtrl, requiredField: true),
+      _passwordInput(),
+    ),
+    _row(
+      _inputRow("Firma No", _firmaNoCtrl, isNumber: true),
+      _inputRow("API Key", _apiKeyCtrl, maxLength: 255),
+    ),
+    _row(_inputRow("Şube No", _subeNoCtrl, isNumber: true), const SizedBox()),
+  ];
 
   // ================= ACTION BAR =================
 
@@ -207,8 +255,8 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
         Expanded(child: _dangerButton("Sil", Icons.delete, _testEt)),
         const SizedBox(width: 16),
         Expanded(
-            child: _normalButton(
-                "Bağlantı Testi", Icons.wifi_tethering, _testEt)),
+          child: _normalButton("Bağlantı Testi", Icons.wifi_tethering, _testEt),
+        ),
         const SizedBox(width: 16),
         Expanded(child: _primaryButton("Kaydet", Icons.save, _kaydet)),
       ],
@@ -224,9 +272,7 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
       obscure: true,
       requiredField: true,
       suffix: IconButton(
-        icon: Icon(
-          _showPassword ? Icons.visibility_off : Icons.visibility,
-        ),
+        icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
         onPressed: () => setState(() => _showPassword = !_showPassword),
       ),
     );
@@ -287,8 +333,9 @@ Widget _inputRow(
       filled: true,
       fillColor: const Color(0xFFF7F9FC),
       isDense: true,
-      counterText:
-          maxLength != null ? "${controller.text.length}/$maxLength" : null,
+      counterText: maxLength != null
+          ? "${controller.text.length}/$maxLength"
+          : null,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(color: Colors.grey.shade300),
@@ -307,13 +354,17 @@ Widget _primaryButton(String label, IconData icon, VoidCallback onTap) =>
     _baseButton(label, icon, onTap, const Color(0xFF065186));
 
 Widget _normalButton(String label, IconData icon, VoidCallback onTap) =>
-    _baseButton(label, icon, onTap, Colors.white,
-        borderColor: const Color(0xFFC9D6E2),
-        textColor: Colors.black87);
+    _baseButton(
+      label,
+      icon,
+      onTap,
+      Colors.white,
+      borderColor: const Color(0xFFC9D6E2),
+      textColor: Colors.black87,
+    );
 
 Widget _dangerButton(String label, IconData icon, VoidCallback onTap) =>
-    _baseButton(label, icon, onTap,
-        const Color.fromARGB(255, 205, 14, 14));
+    _baseButton(label, icon, onTap, const Color.fromARGB(255, 205, 14, 14));
 
 Widget _baseButton(
   String label,
@@ -331,8 +382,7 @@ Widget _baseButton(
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(16),
-        border:
-            borderColor != null ? Border.all(color: borderColor) : null,
+        border: borderColor != null ? Border.all(color: borderColor) : null,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -341,10 +391,7 @@ Widget _baseButton(
           const SizedBox(width: 8),
           Text(
             label,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: textColor,
-            ),
+            style: TextStyle(fontWeight: FontWeight.w600, color: textColor),
           ),
         ],
       ),

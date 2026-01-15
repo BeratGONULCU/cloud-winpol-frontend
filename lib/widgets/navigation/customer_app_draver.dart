@@ -111,13 +111,14 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                     showDivider: !usersExpanded,
                   ),
 
-                  // ================= ŞUBELER =================
+                  // ================= Ürünler =================
                   _drawerItemWithDivider2(
                     DrawerSection(
                       title: "Ürünler",
                       icon: Icons.local_shipping,
-  autoScrollOnExpand: true,
-  scrollController: _scrollController,                      children: [
+                      autoScrollOnExpand: true,
+                      scrollController: _scrollController,
+                      children: [
                         _drawerItemWithDivider(
                           DrawerItem(
                             title: "Fiyat Sorgulama",
@@ -130,20 +131,14 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                             },
                           ),
                         ),
-                        _drawerItemWithDivider(
-                          DrawerItem(
-                            title: "Depolar",
-                            icon: Icons.warehouse_outlined,
-                            indent: 28,
-                          ),
-                          showDivider: false,
-                        ),
+
                       ],
                     ),
                     showDivider: !branchesExpanded,
                   ),
 
                   // ================= DEPOLAR =================
+                  /*
                   _drawerItemWithDivider2(
                     DrawerSection(
                       title: "Depolar",
@@ -174,12 +169,14 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                     ),
                     showDivider: !branchesExpanded,
                   ),
+
+                  */
                   // ================= AYARLAR =================
                   _drawerItemWithDivider(
                     DrawerSection(
                       title: "Ayarlar (Yönetim)",
                       icon: Icons.settings,
-                      autoScrollOnExpand: true,
+                      autoScrollOnExpand: true, // açıldığında ekranı ortalaması için
                       scrollController: _scrollController,
                       children: [
                         // ===== KULLANICILAR (ALT SECTION) =====
@@ -231,13 +228,33 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                           ],
                         ),
 
-                        // ===== ŞUBELER (ALT SECTION) =====
+
+                        DrawerSection(
+                          title: "Firma",
+                          icon: Icons.business,
+                          autoScrollOnExpand: true,
+                          scrollController: _scrollController,
+                          indent: 12,
+                          children: [
+                            _drawerItemWithDivider(
+                              DrawerItem(
+                                title: "Firma Bilgileri",
+                                icon: Icons.list_alt,
+                                indent: 28,
+                                isActive: currentRoute == "/firmaInfo",
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.pushNamed(context, "/firmaInfo");
+                                },
+                              ),
+                            ),
+                            // ===== ŞUBELER (ALT SECTION) =====
                         DrawerSection(
                           title: "Şubeler",
                           icon: Icons.local_shipping,
                           autoScrollOnExpand: true,
                           scrollController: _scrollController,
-                          indent: 12,
+                          indent: 28,
                           children: [
                             _drawerItemWithDivider(
                               DrawerItem(
@@ -269,33 +286,13 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                             ),
                           ],
                         ),
-
-                        DrawerSection(
-                          title: "Firma",
-                          icon: Icons.business,
-                          autoScrollOnExpand: true,
-                          scrollController: _scrollController,
-                          indent: 12,
-                          children: [
-                            _drawerItemWithDivider(
-                              DrawerItem(
-                                title: "Firma Bilgileri",
-                                icon: Icons.list_alt,
-                                indent: 28,
-                                isActive: currentRoute == "/branchList",
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  Navigator.pushNamed(context, "/branchList");
-                                },
-                              ),
-                            ),
                             _drawerItemWithDivider(
                               DrawerItem(
                                 title: "Depolar",
                                 icon: Icons.warehouse_outlined,
                                 indent: 28,
                               ),
-                              showDivider: false,
+                              showDivider: true,
                             ),
                           ],
                         ),
@@ -325,7 +322,7 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                                         milliseconds: 300,
                                       ),
                                       curve: Curves.easeInOut,
-                                      alignment: 0.5, // 👈 ORTA
+                                      alignment: 0.5, //   ORTA
                                     );
                                   }
 
@@ -336,22 +333,6 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                                   );
                                 },
                               ),
-                            ),
-                            _drawerItemWithDivider(
-                              DrawerItem(
-                                title: "Şube Kullanıcıları",
-                                icon: Icons.bar_chart,
-                                indent: 28,
-                              ),
-                              showDivider: true,
-                            ),
-                            _drawerItemWithDivider(
-                              DrawerItem(
-                                title: "Şube Raporları",
-                                icon: Icons.bar_chart,
-                                indent: 28,
-                              ),
-                              showDivider: true,
                             ),
                           ],
                         ),
@@ -492,7 +473,7 @@ class _DrawerSectionState extends State<DrawerSection> {
     return Column(
       children: [
         ListTile(
-          key: _headerKey, // 👈 ARTIK HER SECTION KENDİ KEY’İNE SAHİP
+          key: _headerKey, //   ARTIK HER SECTION KENDİ KEY’İNE SAHİP
           dense: true,
           contentPadding: EdgeInsets.fromLTRB(14 + widget.indent, 2, 14, 2),
           leading: Icon(widget.icon),

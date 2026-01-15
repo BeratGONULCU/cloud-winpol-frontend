@@ -1,0 +1,4 @@
+enum BranchAction {
+  create,
+  edit,
+}

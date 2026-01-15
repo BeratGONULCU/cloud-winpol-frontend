@@ -2,6 +2,8 @@ import 'package:cloud_winpol_frontend/models/customer_action.dart';
 import 'package:cloud_winpol_frontend/service/company_service.dart';
 import 'package:cloud_winpol_frontend/widgets/buttons/panelActionBar.dart';
 import 'package:cloud_winpol_frontend/widgets/buttons/submit_button.dart';
+import 'package:cloud_winpol_frontend/widgets/forms/winpol_form_input.dart';
+import 'package:cloud_winpol_frontend/widgets/forms/winpol_form_panel.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/customer_app_draver.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/AdminMainScaffold.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,9 @@ import 'dart:ui';
 
 import 'package:flutter/services.dart';
 
+// =======================
+// BU EKRANDA EKRANIN ÜST TARAFINDA OLAN TABS KISMI MOBİLDE VAR , WEBDE YOK
+// =======================
 class userInsertScreen extends StatefulWidget {
   static const String routeName = '/userInsertWeb';
 
@@ -24,46 +29,57 @@ class userInsertScreen extends StatefulWidget {
 
 class _UserInsertWebScreenState extends State<userInsertScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool isMobile(BuildContext context) {
+    return MediaQuery.of(context).size.width < 768;
+  }
 
   int _selectedIndex = 0;
-  late final List<AdminTab> tabs;
+
+  Widget _mobileLayout() {
+    return AdminMainScaffold(
+      toolbarBottom: false,
+      selectedIndex: _selectedIndex,
+      onSelect: (i) => setState(() => _selectedIndex = i),
+      tabs: const [
+        AdminTab("Müşteriler", Icons.people, CustomerPanel()),
+        AdminTab("Lisanslar", Icons.security, LicencePanel()),
+        AdminTab("Mikro API", Icons.account_tree, MikroApiPanel()),
+        AdminTab("Ayarlar", Icons.settings, SettingsPanel()),
+      ],
+    );
+  }
+
+  Widget _webLayout() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: CustomerPanel(), 
+      ),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
-
-    tabs = const [
-      AdminTab("Müşteriler", Icons.people, CustomerPanel()),
-      AdminTab("Lisanslar", Icons.security, LicencePanel()),
-      AdminTab("Mikro API", Icons.account_tree, MikroApiPanel()),
-      AdminTab("Ayarlar", Icons.settings, SettingsPanel()),
-    ];
   }
 
   @override
   Widget build(BuildContext context) {
+    final mobile = isMobile(context);
+
     return Scaffold(
-      backgroundColor: AppColors.body, // ← EKLE
+      backgroundColor: AppColors.body,
       key: _scaffoldKey,
       drawer: const CustomerAppDrawer(),
       appBar: WinpolHeader(
         title: "",
         showLogo: false,
         onBack: null,
-        onMenu: () {
-          if (_scaffoldKey.currentState != null) {
-            _scaffoldKey.currentState!.openDrawer();
-          }
-        },
+        onMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onSettings: () =>
             Navigator.pushNamed(context, SettingsScreen.routeName),
       ),
-      body: AdminMainScaffold(
-        toolbarBottom: false,
-        selectedIndex: _selectedIndex,
-        onSelect: (i) => setState(() => _selectedIndex = i),
-        tabs: tabs,
-      ),
+      body: mobile ? _mobileLayout() : _webLayout(),
     );
   }
 }
@@ -335,56 +351,33 @@ class _CustomerPanelState extends State<CustomerPanel> {
   Widget build(BuildContext context) {
     final isWeb = MediaQuery.of(context).size.width > 900;
 
-    return Center(
-      child: Container(
-        width: isWeb ? 760 : 360,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: Colors.black12),
+    return WinpolFormPanel(
+      title: "Kullanıcı Yönetimi",
+      subtitle: action == CustomerAction.create
+          ? "Yeni kullanıcı kaydı oluşturun"
+          : "Mevcut kullanıcı bilgilerini güncelleyin",
+      children: [
+        CustomerActionBar(
+          selected: action,
+          onChanged: (a) => setState(() => action = a),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Kullanıcı Yönetimi",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              action == CustomerAction.create
-                  ? "Yeni kullanıcı kaydı oluşturun"
-                  : "Mevcut kullanıcı bilgilerini güncelleyin",
-              style: TextStyle(fontSize: 13, color: Colors.black54),
-            ),
-            const SizedBox(height: 20),
-
-            CustomerActionBar(
-              selected: action,
-              onChanged: (a) => setState(() => action = a),
-            ),
-
-            const SizedBox(height: 24),
-
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 260),
-              child: action == CustomerAction.create
-                  ? _createForm(isWeb)
-                  : _editForm(isWeb),
-            ),
-          ],
+        const SizedBox(height: 24),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 260),
+          child: action == CustomerAction.create
+              ? _createForm(isWeb)
+              : _editForm(isWeb),
         ),
-      ),
+      ],
     );
   }
 
   // ================= CREATE FORM =================
   Widget _createForm(bool isWeb) {
     return _formWrapper(isWeb, [
-      _input("Vergi No", _taxNoController, digits: 10),
-      _input("Cari Adı", _nameController),
-      _input("Şirket Kodu", _companyCodeController),
+      winpolInput(label: "Vergi No", controller: _taxNoController, digits: 10),
+      winpolInput(label: "Cari Adı", controller: _nameController),
+      winpolInput(label: "Şirket Kodu", controller: _companyCodeController),
     ], SubmitButton(label: "Müşteri Oluştur", onPressed: () {}));
   }
 
@@ -473,19 +466,14 @@ class LicencePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _PanelContainer(
-      title: "lisanslar",
-      child: Center(
-        child: Text(
-          "Lisans CRUD\nADMIN / SUPERVISOR / WORKER",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            height: 1.5,
-            color: Colors.black.withAlpha(150),
-          ),
+    return WinpolFormPanel(
+      title: "Lisanslar",
+      children: [
+        Text(
+          "ADMIN / SUPERVISOR / WORKER",
+          style: TextStyle(color: Colors.black54),
         ),
-      ),
+      ],
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:cloud_winpol_frontend/models/customer_action.dart';
 import 'package:cloud_winpol_frontend/models/customer_main_args.dart';
 import 'package:cloud_winpol_frontend/screens/customer/user_detail_screen.dart';
+import 'package:cloud_winpol_frontend/service/mikro_connection_service.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/customer_app_draver.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_winpol_frontend/service/customer_service.dart';
@@ -28,19 +29,40 @@ class _UserListScreenState extends State<UserlistMainScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUsers();
+    _getPersoneller();
   }
 
-  Future<void> _loadUsers() async {
+
+  Future<void> _getPersoneller() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+
     try {
-      final data = await CustomerService.getAllUsersBySession();
+            final tenantDB = await MikroService.getTenantName();
+
+      final response = await MikroService.connectMikroWithBody(
+        endpoint: 'SqlVeriOkuV2',
+        db_name: tenantDB,
+        body: {"SQLSorgu": "SELECT * FROM PERSONELLER"},
+      );
+
+      final data = response['result']?[0]?['Data']?[0]?['SQLResult1'];
+
       setState(() {
-        users = data;
-        loading = false;
+        users = data != null
+            ? List<Map<String, dynamic>>.from(
+                data,
+              ).map((e) => UserSummary.fromMikro(e)).toList()
+            : [];
       });
     } catch (e) {
       setState(() {
         error = e.toString();
+      });
+    } finally {
+      setState(() {
         loading = false;
       });
     }
@@ -55,8 +77,8 @@ class _UserListScreenState extends State<UserlistMainScreen> {
       backgroundColor: AppColors.body,
       drawer: const CustomerAppDrawer(),
       appBar: WinpolHeader(
-        title: "Kullanıcı Listesi",
-        showLogo: false,
+        title: "",
+        showLogo: true,
         onBack: null,
         onMenu: () => _scaffoldKey.currentState?.openDrawer(),
         onSettings: () =>
@@ -104,7 +126,7 @@ class _UserListScreenState extends State<UserlistMainScreen> {
 
                       _refreshButton(
                         onTap: () {
-                          _loadUsers();
+                          _getPersoneller();
                         },
                       ),
 
@@ -329,7 +351,7 @@ Widget _userListHeader() {
         Expanded(
           flex: 2,
           child: Text(
-            "Kullanıcı No",
+            "Tc Kimlik No",
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
         ),

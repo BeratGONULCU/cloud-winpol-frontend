@@ -5,6 +5,7 @@ import 'package:cloud_winpol_frontend/models/branch_summary_old.dart';
 import 'package:cloud_winpol_frontend/models/customer_action.dart';
 import 'package:cloud_winpol_frontend/models/customer_main_args.dart';
 import 'package:cloud_winpol_frontend/screens/admin/web/admin_main_screen.dart';
+import 'package:cloud_winpol_frontend/screens/customer/branch_insert_screen.dart';
 import 'package:cloud_winpol_frontend/screens/customer/user_detail_screen.dart';
 import 'package:cloud_winpol_frontend/service/mikro_connection_service.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/customer_app_draver.dart';
@@ -49,9 +50,11 @@ class _BranchListScreenState extends State<BranchlistMainScreen> {
     });
 
     try {
+      final tenantDB = await MikroService.getTenantName();
+
       final response = await MikroService.connectMikroWithBody(
         endpoint: 'SqlVeriOkuV2',
-        db_name: '1234567890',
+        db_name: tenantDB,
         body: {
           "SQLSorgu": """
            SELECT Sube_no AS [Şube No], Sube_adi AS [Şube Adı], sube_TelNo1 AS [Telefon], sube_Cadde AS [Cadde], sube_Mahalle AS [Mahalle], sube_Sokak AS [Sokak], sube_Apt_No AS [Apt. No], sube_Ilce AS [İlçe], sube_Il AS [Şehir], sube_Ulke AS [Ülke] FROM SUBELER
@@ -302,6 +305,35 @@ Widget _branchRow(BuildContext context, BranchReportSummary branch, int index) {
         Expanded(flex: 3, child: Text(branch.name ?? "-")),
         Expanded(flex: 2, child: Text(branch.telefon ?? "-")),
         Expanded(flex: 2, child: Text(branch.sehir ?? "-")),
+
+        // ================= EDIT BUTTON =================
+        Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            hoverColor: const Color(0xFF065186).withOpacity(0.12),
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                BranchInsertScreen.routeName,
+                arguments: BranchArgs(
+                  action: BranchAction.update,
+                  branch: branch,
+                ),
+              );
+            },
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: const Color(0xFF065186).withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.edit, size: 16, color: Color(0xFF065186)),
+            ),
+          ),
+        ),
       ],
     ),
   );

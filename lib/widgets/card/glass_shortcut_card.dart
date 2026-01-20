@@ -32,14 +32,14 @@ class _GlassShortcutCardState extends State<GlassShortcutCard> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           decoration: BoxDecoration(
-            // ⬇️ ZEMİNDEN NET AYRILAN RENK
+            // ZEMİNDEN NET AYRILAN RENK
             color: const Color(0xFFE1E5EC),
             borderRadius: BorderRadius.circular(14),
 
-            // ⬇️ DAHA NET SINIR
+            // DAHA NET SINIR
             border: Border.all(color: Colors.black.withOpacity(0.22)),
 
-            // ⬇️ KATMANLI GÖLGE (ÇOK ÖNEMLİ)
+            // KATMANLI GÖLGE (ÇOK ÖNEMLİ)
             boxShadow: [
               // ana gölge
               BoxShadow(

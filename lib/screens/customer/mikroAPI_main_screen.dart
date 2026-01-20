@@ -37,17 +37,28 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
   Future<void> _kaydet() async {
     setState(() => _loading = true);
 
+    final portText = _portCtrl.text.trim();
+    if (portText.isEmpty) {
+      throw Exception("Port boş olamaz");
+    }
+
+    final port = int.tryParse(portText);
+    if (port == null) {
+      throw Exception("Port sayısal olmalı");
+    }
+
     try {
       await MikroService.pushMikroInfo(
         apiIp: _ipCtrl.text.trim(),
-        apiPort: int.parse(_portCtrl.text),
+        apiPort: port,
         apiProtocol: "http",
         apiFirmaKodu: _firmaKoduCtrl.text.trim(),
         apiCalismaYili: _calismaYiliCtrl.text.trim(),
         apiKullanici: _kullaniciCtrl.text.trim(),
-        apiPw: _sifreCtrl.text.trim(), // boşsa gönderilmez
+        apiPwNonHash: _sifreCtrl.text.trim(),
         apiKey: _apiKeyCtrl.text.trim(),
         apiFirmaNo: _firmaNoCtrl.text.trim(),
+        subeNo: _subeNoCtrl.text.trim(),
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,6 +74,18 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
   }
 
   Future<void> _testEt() async {
+    final check = await MikroService.checkConnection();
+
+      if (check) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Bağlantı başarılı")),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Bağlantı başarısız")),
+        );
+      }
+
     setState(() => _loading = true);
     await Future.delayed(const Duration(seconds: 1));
     setState(() => _loading = false);
@@ -89,10 +112,10 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
         _firmaKoduCtrl.text = data.firmaKodu;
         _calismaYiliCtrl.text = data.calismaYili;
         _kullaniciCtrl.text = data.kullanici ?? "";
-        _sifreCtrl.text = ""; // HASH geri basılmaz
+        _sifreCtrl.text = data.non_hashed_password; // HASH geri basılmaz
         _apiKeyCtrl.text = data.apiKey ?? "";
         _firmaNoCtrl.text = data.firmaNo ?? "";
-        _subeNoCtrl.text = ""; // tablo yoksa boş bırak
+        _subeNoCtrl.text = data.subeNo ?? ""; // tablo yoksa boş bırak
       }
     } catch (e) {
       debugPrint("Mikro API Info load error: $e");
@@ -269,11 +292,15 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
     return _inputRow(
       "Şifre",
       _sifreCtrl,
-      obscure: true,
+      obscure: !_showPassword,
       requiredField: true,
       suffix: IconButton(
         icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
-        onPressed: () => setState(() => _showPassword = !_showPassword),
+        onPressed: () {
+          setState(() {
+            _showPassword = !_showPassword;
+          });
+        },
       ),
     );
   }

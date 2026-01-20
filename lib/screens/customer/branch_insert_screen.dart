@@ -1,3 +1,4 @@
+import 'package:cloud_winpol_frontend/service/mikro_connection_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -6,6 +7,11 @@ import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
 import 'package:cloud_winpol_frontend/widgets/buttons/submit_button.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
+import 'package:cloud_winpol_frontend/service/company_service.dart';
+
+import 'package:cloud_winpol_frontend/models/branch_action.dart';
+import 'package:cloud_winpol_frontend/models/branch_main_args.dart';
+import 'package:cloud_winpol_frontend/models/branch_summary.dart';
 
 class BranchInsertScreen extends StatefulWidget {
   static const String routeName = '/branchInsertWeb';
@@ -18,6 +24,9 @@ class BranchInsertScreen extends StatefulWidget {
 
 class _BranchInsertScreenState extends State<BranchInsertScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  BranchAction _action = BranchAction.create;
+  BranchReportSummary? _branch;
+  
 
   // ================= CONTROLLERS =================
   final _firmaNoController = TextEditingController();
@@ -50,13 +59,38 @@ class _BranchInsertScreenState extends State<BranchInsertScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final args = ModalRoute.of(context)?.settings.arguments as BranchArgs?;
+
+    if (args != null) {
+      _action = args.action;
+      _branch = args.branch;
+
+      if (_action == BranchAction.update && _branch != null) {
+        _subeNoController.text = _branch!.subeNo?.toString() ?? '';
+        _subeAdiController.text = _branch!.name ?? '';
+        _telefonController.text = _branch!.telefon ?? '';
+        _caddeController.text = _branch!.cadde ?? '';
+        _mahalleController.text = _branch!.mahalle ?? '';
+        _sokakController.text = _branch!.sokak ?? '';
+        _aptNoController.text = _branch!.aptNo ?? '';
+        _ilceController.text = _branch!.ilce ?? '';
+        _sehirController.text = _branch!.sehir ?? '';
+        _ulkeController.text = _branch!.ulke ?? '';
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: AppColors.body,
       drawer: const CustomerAppDrawer(),
       appBar: WinpolHeader(
-        title: "Şube Oluştur",
+        title: _action == BranchAction.update ? "Şube Düzenle" : "Şube Oluştur",
         showLogo: true,
         onBack: () => Navigator.pop(context),
         onMenu: () => _scaffoldKey.currentState?.openDrawer(),
@@ -67,6 +101,7 @@ class _BranchInsertScreenState extends State<BranchInsertScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 32),
         child: _BranchForm(
+          action: _action,
           firmaNoController: _firmaNoController,
           subeNoController: _subeNoController,
           subeAdiController: _subeAdiController,
@@ -86,25 +121,63 @@ class _BranchInsertScreenState extends State<BranchInsertScreen> {
 
   // ================= SUBMIT =================
   Future<void> _submitBranch() async {
-    final payload = {
-      "Firma No": int.tryParse(_firmaNoController.text),
-      "Şube No": int.tryParse(_subeNoController.text),
-      "Şube Adı": _subeAdiController.text.trim(),
-      "Telefon": _telefonController.text.trim(),
-      "Cadde": _caddeController.text.trim(),
-      "Mahalle": _mahalleController.text.trim(),
-      "Sokak": _sokakController.text.trim(),
-      "Apt. No": _aptNoController.text.trim(),
-      "İlçe": _ilceController.text.trim(),
-      "Şehir": _sehirController.text.trim(),
-      "Ülke": _ulkeController.text.trim(),
-    };
+    try {
+      final subeNo = int.tryParse(_subeNoController.text);
+      if (subeNo == null) {
+        throw Exception("Şube no geçersiz");
+      }
 
-    debugPrint("BRANCH PAYLOAD => $payload");
+      if (_action == BranchAction.create) {
+        await CompanyService.createBranchWithKayitKaydet(
+          subeNo: int.parse(_subeNoController.text),
+          subeAdi: _subeAdiController.text.trim(),
+          tel: _telefonController.text.trim(),
+          cadde: _caddeController.text.trim(),
+          mahalle: _mahalleController.text.trim(),
+          sokak: _sokakController.text.trim(),
+          aptNo: _aptNoController.text.trim(),
+          ilce: _ilceController.text.trim(),
+          il: _sehirController.text.trim(),
+          ulke: _ulkeController.text.trim(),
+        );
+      } else {
+        // UPDATE SQL 
+        if (_action == BranchAction.update) {
+          await CompanyService.updateBranchWithKayitKaydet(
+            subeNo: int.parse(_subeNoController.text),
+            subeAdi: _subeAdiController.text,
+            tel: _telefonController.text,
+            cadde: _caddeController.text,
+            mahalle: _mahalleController.text,
+            sokak: _sokakController.text,
+            aptNo: _aptNoController.text,
+            ilce: _ilceController.text,
+            il: _sehirController.text,
+            ulke: _ulkeController.text,
+          );
+        }
+      }
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Şube kaydetme isteği hazır")));
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _action == BranchAction.update
+                ? "Şube güncellendi"
+                : "Şube oluşturuldu",
+          ),
+        ),
+      );
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
   }
 }
 
@@ -134,8 +207,10 @@ class _BranchForm extends StatelessWidget {
   final TextEditingController sehirController;
   final TextEditingController ulkeController;
   final VoidCallback onSubmit;
+  final BranchAction action;
 
   const _BranchForm({
+    required this.action,
     required this.firmaNoController,
     required this.subeNoController,
     required this.subeAdiController,
@@ -196,6 +271,7 @@ class _BranchForm extends StatelessWidget {
                   label: "Şube No",
                   controller: subeNoController,
                   digits: 5,
+                  enabled: action != BranchAction.update,
                 ),
                 modernInput(label: "Şube Adı", controller: subeAdiController),
                 modernInput(
@@ -214,7 +290,12 @@ class _BranchForm extends StatelessWidget {
               SizedBox(
                 width: isMobile ? double.infinity : 220,
                 height: 48,
-                child: SubmitButton(label: "Şube Kaydet", onPressed: onSubmit),
+                child: SubmitButton(
+                  label: action == BranchAction.update
+                      ? "Şube Güncelle"
+                      : "Şube Kaydet",
+                  onPressed: onSubmit,
+                ),
               ),
             ),
           ],
@@ -247,6 +328,7 @@ Widget modernInput({
   required String label,
   required TextEditingController controller,
   int? digits,
+  bool enabled = true,
 }) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,6 +343,7 @@ Widget modernInput({
       ),
       const SizedBox(height: 6),
       TextField(
+        enabled: enabled,
         controller: controller,
         keyboardType: digits != null ? TextInputType.number : null,
         inputFormatters: digits != null

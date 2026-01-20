@@ -3,6 +3,7 @@ import 'package:cloud_winpol_frontend/screens/customer/customer_home_screen.dart
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/service/auth_storage.dart';
 import 'package:cloud_winpol_frontend/service/customer_login_service.dart';
+import 'package:cloud_winpol_frontend/service/mikro_connection_service.dart';
 import 'package:cloud_winpol_frontend/utils/show_pop.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/buttons/app_button.dart';
@@ -96,6 +97,8 @@ class _CustomerLoginScreenState extends State<CustomerLoginScreen> {
         // AUTH KONTROLÜ (isteğe bağlı ama güzel)
         final sessionControl = await CustomerLoginService.sessionControl();
         print("SESSION CONTROL RESULT: $sessionControl");
+
+        // burada mikro api_pw hash yapılacak. 
 
         showPop(context, "Giriş başarılı", PopType.success);
 

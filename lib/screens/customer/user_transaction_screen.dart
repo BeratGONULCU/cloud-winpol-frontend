@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_winpol_frontend/data/home_shortcuts.dart';
+import 'package:cloud_winpol_frontend/data/user_shortcuts.dart';
 import 'package:cloud_winpol_frontend/widgets/app_header.dart';
 import 'package:cloud_winpol_frontend/widgets/navigation/customer_app_draver.dart';
 import 'package:cloud_winpol_frontend/widgets/theme/app_colors.dart';
@@ -7,21 +7,21 @@ import 'package:cloud_winpol_frontend/widgets/card/glass_shortcut_card.dart';
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 import 'package:cloud_winpol_frontend/widgets/auth/AuthGuard.dart';
 
-class HomeDashboardScreen extends StatelessWidget {
-  static const String routeName = '/homeScreen';
+class UserTransactionScreen extends StatelessWidget {
+  static const String routeName = '/userTransactionScreen';
 
-  const HomeDashboardScreen({super.key});
+  const UserTransactionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return AuthGuard(
-      child: const _HomeDashboardContent(),
+      child: const _UserTransactionContent(),
     );
   }
 }
 
-class _HomeDashboardContent extends StatelessWidget {
-  const _HomeDashboardContent();
+class _UserTransactionContent extends StatelessWidget {
+  const _UserTransactionContent();
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +71,7 @@ class _HomeDashboardContent extends StatelessWidget {
               const SizedBox(height: 28),
               Expanded(
                 child: GridView.builder(
-                  itemCount: homeShortcuts.length,
+                  itemCount: userShortcuts.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: 20,
@@ -79,7 +79,7 @@ class _HomeDashboardContent extends StatelessWidget {
                     childAspectRatio: 1.3,
                   ),
                   itemBuilder: (context, index) {
-                    final item = homeShortcuts[index];
+                    final item = userShortcuts[index];
                     return GlassShortcutCard(
                       icon: item.icon,
                       title: item.title,

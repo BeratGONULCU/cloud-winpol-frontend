@@ -17,9 +17,10 @@ class MikroApiSummary {
   final String calismaYili; // api_calismayili
   final String? kullanici; // api_kullanici
   final String? password; // api_pw (HASHED)
+  final String non_hashed_password; // api_pw (NON HASHED)
   final String? apiKey; // api_key
   final String? firmaNo; // api_firmano
-
+  final String? subeNo; // api_subeno
   // Audit
   final String? createdUser; // api_create_user
   final DateTime createdAt; // api_create_date
@@ -37,7 +38,9 @@ class MikroApiSummary {
     required this.firmaKodu,
     required this.calismaYili,
     required this.createdAt,
+    required this.non_hashed_password,
 
+    this.subeNo,
     this.kullanici,
     this.password,
     this.apiKey,
@@ -64,8 +67,10 @@ class MikroApiSummary {
 
       kullanici: json['api_kullanici']?.toString(),
       password: json['api_pw']?.toString(),
+      non_hashed_password: json['api_pw_non_hash']?.toString() ?? "",
       apiKey: json['api_key']?.toString(),
       firmaNo: json['api_firmano']?.toString(),
+      subeNo: json['sube_no']?.toString(),
 
       createdUser: json['api_create_user']?.toString(),
       createdAt: DateTime.parse(

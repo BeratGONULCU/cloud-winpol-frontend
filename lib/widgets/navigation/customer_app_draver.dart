@@ -67,45 +67,7 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                       autoScrollOnExpand: true,
                       scrollController: _scrollController,
                       children: [
-                        _drawerItemWithDivider(
-                          DrawerItem(
-                            title: "Kullanıcı Listesi",
-                            icon: Icons.people_outline,
-                            indent: 28,
-                            isActive: currentRoute == "/userList",
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.pushNamed(context, "/userList");
-                            },
-                          ),
-                        ),
-                        _drawerItemWithDivider(
-                          DrawerItem(
-                            title: "Kullanıcı İşlemleri",
-                            icon: Icons.badge_outlined,
-                            indent: 28,
-                            isActive: currentRoute == "/customerList",
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.pushNamed(context, "/customerList");
-                            },
-                          ),
-                        ),
-                        _drawerItemWithDivider(
-                          DrawerItem(
-                            title: "Kullanıcı Raporları",
-                            icon: Icons.groups_outlined,
-                            indent: 28,
-                          ),
-                        ),
-                        _drawerItemWithDivider(
-                          DrawerItem(
-                            title: "Kullanıcı Loglar",
-                            icon: Icons.key_outlined,
-                            indent: 28,
-                          ),
-                          showDivider: false,
-                        ),
+                        
                       ],
                     ),
                     showDivider: !usersExpanded,
@@ -202,11 +164,11 @@ class _CustomerAppDrawerState extends State<CustomerAppDrawer> {
                             _drawerItemWithDivider(
                               DrawerItem(
                                 title: "Kullanıcı İşlemleri",
-                                icon: Icons.badge_outlined,
+                                icon: Icons.badge_outlined, 
                                 indent: 28,
                                 onTap: () {
                                   Navigator.pop(context);
-                                  Navigator.pushNamed(context, "/customerList");
+                                  Navigator.pushNamed(context, "/userTransactionScreen");
                                 },
                               ),
                             ),

@@ -9,7 +9,14 @@ final List<ShortcutItem> homeShortcuts = [
       //Navigator.pushNamed(context, '/adminLogin');
     },
   ),
-  ShortcutItem(icon: Icons.inventory_2, title: "Ürünler", onTap: (context) {}),
+  ShortcutItem(
+    icon: Icons.inventory_2,
+    title: "Ürünler",
+    onTap: (ctx) {
+      Navigator.of(ctx, rootNavigator: true).pushNamed('/productQuery');
+    },
+  ),
+
   ShortcutItem(
     icon: Icons.people,
     title: "Kullanıcılar",
@@ -31,6 +38,13 @@ final List<ShortcutItem> homeShortcuts = [
     title: "Ayarlar",
     onTap: (context) {
       Navigator.pushNamed(context, '/settings');
+    },
+  ),
+  ShortcutItem(
+    icon: Icons.api,
+    title: "Mikro API Ayarları",
+    onTap: (context) {
+      Navigator.pushNamed(context, '/mikroApiSettings');
     },
   ),
 ];

@@ -16,15 +16,15 @@ import 'package:cloud_winpol_frontend/widgets/buttons/submit_button.dart';
 
 import 'package:cloud_winpol_frontend/screens/settings/settings_screen.dart';
 
-class userInsertScreen extends StatefulWidget {
-  static const String routeName = '/userInsertWeb';
-  const userInsertScreen({super.key});
+class RoleInsertScreen extends StatefulWidget {
+  static const String routeName = '/roleInsertWeb';
+  const RoleInsertScreen({super.key});
 
   @override
-  State<userInsertScreen> createState() => _UserInsertWebScreenState();
+  State<RoleInsertScreen> createState() => _RoleInsertWebScreenState();
 }
 
-class _UserInsertWebScreenState extends State<userInsertScreen> {
+class _RoleInsertWebScreenState extends State<RoleInsertScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool isMobile(BuildContext c) => MediaQuery.of(c).size.width < 768;
   int _selectedIndex = 0;
@@ -70,10 +70,9 @@ class _CustomerPanelState extends State<CustomerPanel> {
   bool isPassive = false;
 
   // ================= STATE =================
-  List<UserSummary> users = [];
   //UserSummary? selectedUser;
-  String? selectedUserId;
-  UserSummary? selectedUser;
+  String? selectedRoleId;
+  RoleSummary? selectedRole;
 
   bool loadingUsers = false;
   bool submitting = false;
@@ -83,18 +82,14 @@ class _CustomerPanelState extends State<CustomerPanel> {
   bool loadingRoles = false;
 
   // ================= CONTROLLERS =================
-  final _usernameCtrl = TextEditingController();
-  final _emailCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
-  final _firstNameCtrl = TextEditingController();
-  final _lastNameCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
-  final _roleCtrl = TextEditingController(text: "WORKER");
+  final _roleNameController = TextEditingController();
+  final _DescriptionController = TextEditingController();
+  
+  get _updateRole => null; // bu silinecek
 
   @override
   void initState() {
     super.initState();
-    _loadUsers();
     _loadRoles();
   }
 
@@ -109,26 +104,14 @@ class _CustomerPanelState extends State<CustomerPanel> {
 
   @override
   void dispose() {
-    _usernameCtrl.dispose();
-    _emailCtrl.dispose();
-    _phoneCtrl.dispose();
-    _firstNameCtrl.dispose();
-    _lastNameCtrl.dispose();
-    _passwordCtrl.dispose();
-    _roleCtrl.dispose();
+    _roleNameController.dispose();    
+    _DescriptionController.dispose(); 
     super.dispose();
   }
 
-  void _fillFromUser(UserSummary u) {
-    _usernameCtrl.text = u.username;
-    _emailCtrl.text = u.email;
-    _phoneCtrl.text = u.phone ?? "";
-    _firstNameCtrl.text = u.firstName ?? "";
-    _lastNameCtrl.text = u.lastName ?? "";
-
-    selectedRoleIds = {u.roleId};
-
-    isPassive = u.isPassive ?? false; // modelde yoksa eklenir
+  void _fillFromRole(RoleSummary u) {
+    _roleNameController.text = u.name ?? "";
+    _DescriptionController.text = u.description ?? "";
   }
 
   Widget _passiveCheckbox() {
@@ -165,7 +148,7 @@ class _CustomerPanelState extends State<CustomerPanel> {
       ),
       builder: (context) {
         final TextEditingController searchCtrl = TextEditingController();
-        List<UserSummary> filtered = List.from(users);
+        List<RoleSummary> filtered = List.from(roles);
 
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -189,13 +172,13 @@ class _CustomerPanelState extends State<CustomerPanel> {
                       ),
                       onChanged: (v) {
                         setModalState(() {
-                          filtered = users
+                          filtered = roles
                               .where(
                                 (u) =>
-                                    u.username.toLowerCase().contains(
+                                    u.name.toLowerCase().contains(
                                       v.toLowerCase(),
                                     ) ||
-                                    (u.longName ?? "").toLowerCase().contains(
+                                    (u.description ?? "").toLowerCase().contains(
                                       v.toLowerCase(),
                                     ),
                               )
@@ -215,17 +198,17 @@ class _CustomerPanelState extends State<CustomerPanel> {
                         final u = filtered[i];
                         return ListTile(
                           leading: CircleAvatar(
-                            child: Text(u.username[0].toUpperCase()),
+                            child: Text(u.name[0].toUpperCase()),
                           ),
-                          title: Text(u.username),
-                          subtitle: u.longName != null
-                              ? Text(u.longName!)
+                          title: Text(u.name),
+                          subtitle: u.description != null
+                              ? Text(u.description!)
                               : null,
                           onTap: () {
                             setState(() {
-                              selectedUser = u;
-                              selectedUserId = u.id;
-                              _fillFromUser(u);
+                              selectedRole = u;
+                              selectedRoleId = u.id;
+                              _fillFromRole(u);
                             });
                             Navigator.pop(context);
                           },
@@ -243,93 +226,37 @@ class _CustomerPanelState extends State<CustomerPanel> {
   }
 
   // ================= LOAD USERS =================
-  Future<void> _loadUsers() async {
-    setState(() => loadingUsers = true);
-    try {
-      final fetched = await CompanyService.getAllUsers();
 
-      UserSummary? stillSelected;
-      if (selectedUserId != null) {
-        final match = fetched.where((u) => u.id == selectedUserId).toList();
-        if (match.isNotEmpty) {
-          stillSelected = match.first;
-        }
-      }
 
-      setState(() {
-        users = fetched;
-        selectedUser = stillSelected;
-        if (stillSelected == null) {
-          selectedUserId = null;
-        }
-      });
-    } finally {
-      setState(() => loadingUsers = false);
-    }
-  }
-
-  // ================= CREATE USER =================
-  Future<void> _createUser() async {
+  // ================= CREATE ROLE =================
+  Future<void> _createRole() async {
     setState(() => submitting = true);
     try {
-      await CompanyService.createUser({
-        "username": _usernameCtrl.text.trim(),
-        "firstName": _firstNameCtrl.text.trim(),
-        "lastName": _lastNameCtrl.text.trim(),
-        "email": _emailCtrl.text.trim(),
-        "phone": _phoneCtrl.text.trim(),
-        "password": _passwordCtrl.text,
-        "roleIds": selectedRoleIds.toList(),
-        "isPassive": isPassive,
-      });
+      await CompanyService.createRole(
+        name: _roleNameController.text.trim(),
+        description: _DescriptionController.text.trim(),
+      );
 
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Kullanıcı oluşturuldu")));
 
       _clearForm();
-      _loadUsers();
     } finally {
       setState(() => submitting = false);
     }
   }
 
-  // ================= UPDATE USER =================
-  Future<void> _updateUser() async {
-    if (selectedUser == null) return;
+  // ================= UPDATE ROLE =================
 
-    setState(() => submitting = true);
-    try {
-      await CompanyService.updateUser(selectedUser!.id, {
-        "firstName": _firstNameCtrl.text.trim(),
-        "lastName": _lastNameCtrl.text.trim(),
-        "email": _emailCtrl.text.trim(),
-        "phone": _phoneCtrl.text.trim(),
-        "roleIds": selectedRoleIds.toList(),
-        "isPassive": isPassive,
-      });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Kullanıcı güncellendi")));
-
-      _loadUsers();
-    } finally {
-      setState(() => submitting = false);
-    }
-  }
 
   void _clearForm() {
-    _usernameCtrl.clear();
-    _emailCtrl.clear();
-    _phoneCtrl.clear();
-    _firstNameCtrl.clear();
-    _lastNameCtrl.clear();
-    _passwordCtrl.clear();
-    _roleCtrl.text = "WORKER";
+    _roleNameController.clear();
+    _DescriptionController.clear();
+    isPassive = false;
+    selectedRoleIds.clear();
   }
-
-
 
   // ================= BUILD =================
   @override
@@ -339,31 +266,31 @@ class _CustomerPanelState extends State<CustomerPanel> {
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 32),
       child: WinpolFormPanel(
-        title: "Kullanıcı Yönetimi",
+        title: "Yetki Yönetimi",
         subtitle: action == CustomerAction.create
-            ? "Yeni kullanıcı oluştur"
-            : "Kullanıcı bilgilerini güncelle",
+            ? "Yeni yetki oluştur"
+            : "Yetki bilgilerini güncelle",
         children: [
           CustomerActionBar(
             selected: action,
             onChanged: (a) {
               setState(() {
                 action = a;
-                selectedUser = null;
+                selectedRole = null;
                 _clearForm();
               });
             },
           ),
           const SizedBox(height: 24),
-          if (action == CustomerAction.edit) _userSelector(),
+          if (action == CustomerAction.edit) _roleSelector(),
           _form(isWeb),
         ],
       ),
     );
   }
 
-  // ================= USER SELECTOR =================
-  Widget _userSelector() {
+  // ================= ROLE SELECTOR =================
+  Widget _roleSelector() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: InkWell(
@@ -378,9 +305,9 @@ class _CustomerPanelState extends State<CustomerPanel> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           child: Text(
-            selectedUser?.username ?? "Kullanıcı seçin",
+            selectedRole?.name ?? "Yetki seçin",
             style: TextStyle(
-              color: selectedUser == null ? Colors.black54 : Colors.black87,
+              color: selectedRole == null ? Colors.black54 : Colors.black87,
             ),
           ),
         ),
@@ -392,40 +319,29 @@ class _CustomerPanelState extends State<CustomerPanel> {
     return SizedBox(width: isWeb ? 320 : double.infinity, child: child);
   }
 
-Widget _roleDropdown() {
-  if (loadingRoles) {
-    return const LinearProgressIndicator();
+  Widget _roleDropdown() {
+    if (loadingRoles) {
+      return const LinearProgressIndicator();
+    }
+
+    return DropdownButtonFormField<String>(
+      value: selectedRoleIds.isNotEmpty ? selectedRoleIds.first : null,
+      decoration: const InputDecoration(
+        labelText: "Rol",
+        filled: true,
+        fillColor: Color(0xFFF9FAFB),
+        border: OutlineInputBorder(),
+      ),
+      items: roles
+          .map((r) => DropdownMenuItem(value: r.id, child: Text(r.name)))
+          .toList(),
+      onChanged: (v) {
+        setState(() {
+          selectedRoleIds = v != null ? {v} : {};
+        });
+      },
+    );
   }
-
-  final value = selectedRoleIds.isNotEmpty &&
-          roles.any((r) => r.id == selectedRoleIds.first)
-      ? selectedRoleIds.first
-      : null;
-
-  return DropdownButtonFormField<String>(
-    value: value,
-    decoration: const InputDecoration(
-      labelText: "Rol",
-      filled: true,
-      fillColor: Color(0xFFF9FAFB),
-      border: OutlineInputBorder(),
-    ),
-    items: roles
-        .map(
-          (r) => DropdownMenuItem<String>(
-            value: r.id, // ID
-            child: Text(r.name), // label
-          ),
-        )
-        .toList(),
-    onChanged: (v) {
-      setState(() {
-        selectedRoleIds = v != null ? {v} : {};
-      });
-    },
-  );
-}
-
 
   // ================= FORM =================
   Widget _form(bool isWeb) {
@@ -439,41 +355,16 @@ Widget _roleDropdown() {
             children: [
               _wrapItem(
                 isWeb,
-                modernInput(label: "Personel Kodu", controller: _usernameCtrl),
+                modernInput(label: "Yetki adı:", controller: _roleNameController),
               ),
               _wrapItem(
                 isWeb,
-                modernInput(label: "E-Mail", controller: _emailCtrl),
+                modernInput(label: "Açıklama", controller: _DescriptionController),
               ),
-              _wrapItem(
-                isWeb,
-                modernInput(
-                  label: "Telefon",
-                  controller: _phoneCtrl,
-                  digits: 11,
-                ),
-              ),
-              _wrapItem(
-                isWeb,
-                modernInput(label: "Ad", controller: _firstNameCtrl),
-              ),
-              _wrapItem(
-                isWeb,
-                modernInput(label: "Soyad", controller: _lastNameCtrl),
-              ),
-              if (action == CustomerAction.create)
-                _wrapItem(
-                  isWeb,
-                  modernInput(
-                    label: "Şifre",
-                    controller: _passwordCtrl,
-                    obscure: true,
-                  ),
-                ),
 
-              _wrapItem(isWeb, _passiveCheckbox()),
+              //_wrapItem(isWeb, _passiveCheckbox()),
 
-              _wrapItem(isWeb, _roleDropdown()),
+              //_wrapItem(isWeb, _roleDropdown()),
             ],
           ),
           const SizedBox(height: 28),
@@ -487,10 +378,10 @@ Widget _roleDropdown() {
                 //loading: submitting,
                 label: action == CustomerAction.create
                     ? "Kullanıcı Oluştur"
-                    : "Kullanıcı Güncelle",
+                    : "Yetki Güncelle",
                 onPressed: action == CustomerAction.create
-                    ? _createUser
-                    : _updateUser,
+                    ? _createRole
+                    : _updateRole,
               ),
             ),
           ),

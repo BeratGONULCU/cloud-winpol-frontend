@@ -5,8 +5,9 @@ import 'package:http/http.dart' as http;
 
 class CustomerLoginService {
   //static const String baseUrl = "http://localhost:8000";
-  static const String baseUrl = "http://37.27.204.97:8000";
-  
+  //static const String baseUrl = "http://37.27.204.97:8000";
+  static const String baseUrl = "/api";
+
   static final http.Client _client = http.Client();
 
   static Future<Map<String, dynamic>> login(

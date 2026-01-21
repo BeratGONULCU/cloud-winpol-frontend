@@ -346,7 +346,7 @@ Widget _logoutButton(BuildContext context) {
           // BACKEND LOGOUT + TOKEN CLEAR
           await TenantAuthService.logout();
 
-          // 🔁 LOGIN'E DÖN (STACK TEMİZ)
+          // LOGIN'E DÖN (STACK TEMİZ)
           Navigator.pushNamedAndRemoveUntil(
             context,
             CustomerLoginScreen.routeName,

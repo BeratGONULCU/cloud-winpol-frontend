@@ -8,7 +8,7 @@ import 'package:http/http.dart';
 
 class MikroService {
   //static const String baseUrl = "http://localhost:8000";
-  static const String baseUrl = "http://37.27.204.97:8000";
+  static const String baseUrl = "/api";
 
   // MİKRO BAĞLANTI SERVİSİ
 

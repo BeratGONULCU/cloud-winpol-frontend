@@ -6,7 +6,7 @@ import 'package:cloud_winpol_frontend/service/auth_storage.dart';
 
 class TenantAuthService {
   //static const String baseUrl = "http://localhost:8000";
-  static const String baseUrl = "http://37.27.204.97:8000";
+  static const String baseUrl = "/api";
 
   static Future<void> logout() async {
     final token = await AuthStorage.getToken();

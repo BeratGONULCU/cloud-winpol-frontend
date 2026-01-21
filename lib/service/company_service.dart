@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 
 class CompanyService {
   //static const String baseUrl = "http://localhost:8000";
-  static const String baseUrl = "http://37.27.204.97:8000";
+  static const String baseUrl = "/api";
 
   static Future<Map<String, dynamic>> createCustomer({
     required String vergiNo,

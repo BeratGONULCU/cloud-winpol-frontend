@@ -7,7 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
 class MikroService {
-  static const String baseUrl = 'http://localhost:8000';
+  //static const String baseUrl = "http://localhost:8000";
+  static const String baseUrl = "http://37.27.204.97:8000";
 
   // MİKRO BAĞLANTI SERVİSİ
 
@@ -121,6 +122,10 @@ class MikroService {
   static Future<List<MikroApiSummary>> getMikroInfo() async {
     final token = await AuthStorage.getToken();
 
+    if (token == null || token.isEmpty) {
+      throw Exception("Oturum bulunamadı (token yok)");
+    }
+
     final uri = Uri.parse("$baseUrl/tenant/get-mikro-info");
 
     final response = await http.get(
@@ -128,22 +133,35 @@ class MikroService {
       headers: {"Authorization": "Bearer $token", "Accept": "application/json"},
     );
 
-    if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
-
-      // backend object dönüyor
-      if (decoded is Map<String, dynamic>) {
-        return [MikroApiSummary.fromJson(decoded)];
-      }
-
-      if (decoded is List) {
-        return decoded.map((e) => MikroApiSummary.fromJson(e)).toList();
-      }
-
+    // KAYIT YOK → INSERT MODU
+    if (response.statusCode == 404) {
       return [];
     }
 
-    throw Exception("Mikro Bilgileri alınamadı (HTTP ${response.statusCode})");
+    // AUTH / SERVER HATALARI
+    if (response.statusCode != 200) {
+      throw Exception(
+        "Mikro API hata (${response.statusCode}): ${response.body}",
+      );
+    }
+
+    // TEK NOKTADA JSON PARSE
+    final decoded = jsonDecode(response.body);
+
+    // Backend tek obje dönebilir
+    if (decoded is Map<String, dynamic>) {
+      return [MikroApiSummary.fromJson(decoded)];
+    }
+
+    // Backend liste dönebilir
+    if (decoded is List) {
+      return decoded
+          .map((e) => MikroApiSummary.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    // Beklenmeyen format
+    throw Exception("Mikro API beklenmeyen format döndü");
   }
 
   // get tenantdb name
@@ -201,84 +219,137 @@ class MikroService {
     );
   }
 
+  // mikro API yeni kayıt
   // mikro kayıt ekleme servisi /tenant/push-mikro-info
-static Future<void> pushMikroInfo({
-  required String apiIp,
-  required int apiPort,
-  required String apiProtocol,
-  required String apiFirmaKodu,
-  required String apiCalismaYili,
-  required String apiKullanici,
-  required String apiPwNonHash,
-  required String apiKey,
-  required String apiFirmaNo,
-  required String subeNo,
-}) async {
-  final Map<String, dynamic> body = {
-    "api_ip": apiIp,
-    "api_port": apiPort,
-    "api_protocol": apiProtocol,
-    "api_firmakodu": apiFirmaKodu,
-    "api_calismayili": apiCalismaYili,
-    "api_kullanici": apiKullanici,
-    "api_pw_non_hash": apiPwNonHash,
-    "api_key": apiKey,
-    "api_firmano": apiFirmaNo,
-    "sube_no": int.parse(subeNo),
-  };
+  static Future<void> pushMikroInfo({
+    required String apiIp,
+    required int apiPort,
+    required String apiProtocol,
+    required String apiFirmaKodu,
+    required String apiCalismaYili,
+    required String apiKullanici,
+    required String apiPwNonHash,
+    required String apiKey,
+    //required String apiFirmaNo,
+    String? subeNo,
+  }) async {
+    if (subeNo == null || subeNo.trim().isEmpty) {
+      throw Exception("Şube No zorunludur");
+    }
+    final Map<String, dynamic> body = {
+      "api_ip": apiIp,
+      "api_port": apiPort,
+      "api_protocol": apiProtocol,
+      "api_firmakodu": apiFirmaKodu,
+      "api_calismayili": apiCalismaYili,
+      "api_kullanici": apiKullanici,
+      "api_pw_non_hash": apiPwNonHash,
+      "api_key": apiKey,
+      //"api_firmano": apiFirmaNo,
+      "sube_no": int.parse(subeNo),
+    };
 
-  final token = await AuthStorage.getToken(); // senin yapına göre
-  if (token == null || token.isEmpty) {
-    throw Exception("Oturum bulunamadı (token yok). Lütfen tekrar giriş yapın.");
-  }
+    final token = await AuthStorage.getToken(); // senin yapına göre
+    if (token == null || token.isEmpty) {
+      throw Exception(
+        "Oturum bulunamadı (token yok). Lütfen tekrar giriş yapın.",
+      );
+    }
 
-  final response = await ApiClient.put(
-    Uri.parse("$baseUrl/tenant/push-mikro-info"),
-    body: jsonEncode(body),
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $token",
-    },
-  );
-
-  if (response.statusCode != 200) {
-    throw Exception(
-      "Mikro API bilgileri güncellenemedi (HTTP ${response.statusCode}): ${response.body}",
-    );
-  }
-}
-
-
-static Future<bool> checkConnection() async {
-  try {
-    // tenant-info endpoint’inden db adı alınır
-    final tenantInfo = await MikroService.getTenantName();
-
-    final response = await MikroService.connectMikroWithBody(
-      endpoint: 'SqlVeriOkuV2',
-      db_name: tenantInfo,
-      body: {
-        "SQLSorgu": "SELECT 1 AS ConnectionTest",
+    final response = await ApiClient.post(
+      Uri.parse("$baseUrl/tenant/post-mikro-info"),
+      body: jsonEncode(body),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
       },
     );
 
-    final result = response['result']?[0];
-
-    if (result == null || result['StatusCode'] != 200) {
-      return false;
+    if (response.statusCode != 200) {
+      throw Exception(
+        "Mikro API bilgileri kaydedilemedi (HTTP ${response.statusCode}): ${response.body}",
+      );
     }
-
-    final data = result['Data']?[0]?['SQLResult1'];
-
-    if (data == null || data.isEmpty) {
-      return false;
-    }
-
-    return data.first['ConnectionTest'] == 1;
-  } catch (e) {
-    return false; // ping fail → bağlantı yok
   }
-}
 
-    
+  // mikro kayıt ekleme servisi /tenant/push-mikro-info
+  static Future<void> updateMikroInfo({
+    required String apiIp,
+    required int apiPort,
+    required String apiProtocol,
+    required String apiFirmaKodu,
+    required String apiCalismaYili,
+    required String apiKullanici,
+    required String apiPwNonHash,
+    required String apiKey,
+    //required String apiFirmaNo,
+    String? subeNo,
+  }) async {
+    if (subeNo == null || subeNo.trim().isEmpty) {
+      throw Exception("Şube No zorunludur");
+    }
+    final Map<String, dynamic> body = {
+      "api_ip": apiIp,
+      "api_port": apiPort,
+      "api_protocol": apiProtocol,
+      "api_firmakodu": apiFirmaKodu,
+      "api_calismayili": apiCalismaYili,
+      "api_kullanici": apiKullanici,
+      "api_pw_non_hash": apiPwNonHash,
+      "api_key": apiKey,
+      //"api_firmano": apiFirmaNo,
+      "sube_no": int.parse(subeNo),
+    };
+
+    final token = await AuthStorage.getToken(); // senin yapına göre
+    if (token == null || token.isEmpty) {
+      throw Exception(
+        "Oturum bulunamadı (token yok). Lütfen tekrar giriş yapın.",
+      );
+    }
+
+    final response = await ApiClient.put(
+      Uri.parse("$baseUrl/tenant/put-mikro-info"),
+      body: jsonEncode(body),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        "Mikro API bilgileri güncellenemedi (HTTP ${response.statusCode}): ${response.body}",
+      );
+    }
+  }
+
+  static Future<bool> checkConnection() async {
+    try {
+      // tenant-info endpoint’inden db adı alınır
+      final tenantInfo = await MikroService.getTenantName();
+
+      final response = await MikroService.connectMikroWithBody(
+        endpoint: 'SqlVeriOkuV2',
+        db_name: tenantInfo,
+        body: {"SQLSorgu": "SELECT 1 AS ConnectionTest"},
+      );
+
+      final result = response['result']?[0];
+
+      if (result == null || result['StatusCode'] != 200) {
+        return false;
+      }
+
+      final data = result['Data']?[0]?['SQLResult1'];
+
+      if (data == null || data.isEmpty) {
+        return false;
+      }
+
+      return data.first['ConnectionTest'] == 1;
+    } catch (e) {
+      return false; // ping fail → bağlantı yok
+    }
+  }
 }

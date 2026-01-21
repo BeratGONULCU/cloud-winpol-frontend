@@ -16,7 +16,7 @@ class ApiClient {
     );
   }
 
-  static Future<http.Response> post(Uri url, {Object? body}) async {
+  static Future<http.Response> post(Uri url, {Object? body, required Map<String, String> headers}) async {
     final token = await AuthStorage.getToken();
 
     return _client.post(

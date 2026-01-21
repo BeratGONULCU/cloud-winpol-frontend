@@ -4,7 +4,9 @@ import 'package:cloud_winpol_frontend/service/auth_storage.dart';
 import 'package:http/http.dart' as http;
 
 class LoginService {
-  static const String baseUrl = "http://localhost:8000";
+  //static const String baseUrl = "http://localhost:8000";
+  static const String baseUrl = "http://37.27.204.97:8000";
+  
   //  static const String baseUrl = "http://192.168.1.36:8000";
   static final http.Client _client = http.Client();
 

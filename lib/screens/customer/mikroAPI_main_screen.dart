@@ -28,7 +28,7 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
   final _sifreCtrl = TextEditingController();
 
   final _apiKeyCtrl = TextEditingController();
-  final _firmaNoCtrl = TextEditingController();
+  //final _firmaNoCtrl = TextEditingController();
   final _subeNoCtrl = TextEditingController();
 
   bool _loading = false;
@@ -37,33 +37,66 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
   Future<void> _kaydet() async {
     setState(() => _loading = true);
 
-    final portText = _portCtrl.text.trim();
-    if (portText.isEmpty) {
-      throw Exception("Port boş olamaz");
-    }
-
-    final port = int.tryParse(portText);
-    if (port == null) {
-      throw Exception("Port sayısal olmalı");
-    }
-
     try {
-      await MikroService.pushMikroInfo(
-        apiIp: _ipCtrl.text.trim(),
-        apiPort: port,
-        apiProtocol: "http",
-        apiFirmaKodu: _firmaKoduCtrl.text.trim(),
-        apiCalismaYili: _calismaYiliCtrl.text.trim(),
-        apiKullanici: _kullaniciCtrl.text.trim(),
-        apiPwNonHash: _sifreCtrl.text.trim(),
-        apiKey: _apiKeyCtrl.text.trim(),
-        apiFirmaNo: _firmaNoCtrl.text.trim(),
-        subeNo: _subeNoCtrl.text.trim(),
-      );
+      if (_subeNoCtrl.text.trim().isEmpty) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Şube No zorunludur")));
+        return;
+      }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Mikro API bilgileri güncellendi")),
-      );
+      final portText = _portCtrl.text.trim();
+      if (portText.isEmpty) {
+        throw Exception("Port boş olamaz");
+      }
+
+      final port = int.tryParse(portText);
+      if (port == null) {
+        throw Exception("Port sayısal olmalı");
+      }
+
+      //  Mikro bilgilerini çek
+      final mikroList = await MikroService.getMikroInfo();
+
+      final bool mikroVar = mikroList.isNotEmpty;
+
+      if (mikroVar) {
+        // UPDATE
+        await MikroService.updateMikroInfo(
+          apiIp: _ipCtrl.text.trim(),
+          apiPort: port,
+          apiProtocol: "http",
+          apiFirmaKodu: _firmaKoduCtrl.text.trim(),
+          apiCalismaYili: _calismaYiliCtrl.text.trim(),
+          apiKullanici: _kullaniciCtrl.text.trim(),
+          apiPwNonHash: _sifreCtrl.text.trim(),
+          apiKey: _apiKeyCtrl.text.trim(),
+          //apiFirmaNo: _firmaNoCtrl.text.trim(),
+          subeNo: _subeNoCtrl.text.trim(),
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Mikro API bilgileri güncellendi")),
+        );
+      } else {
+        // INSERT
+        await MikroService.pushMikroInfo(
+          apiIp: _ipCtrl.text.trim(),
+          apiPort: port,
+          apiProtocol: "http",
+          apiFirmaKodu: _firmaKoduCtrl.text.trim(),
+          apiCalismaYili: _calismaYiliCtrl.text.trim(),
+          apiKullanici: _kullaniciCtrl.text.trim(),
+          apiPwNonHash: _sifreCtrl.text.trim(),
+          apiKey: _apiKeyCtrl.text.trim(),
+          //apiFirmaNo: _firmaNoCtrl.text.trim(),
+          subeNo: _subeNoCtrl.text.trim(),
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Mikro API bilgileri kaydedildi")),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -76,15 +109,15 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
   Future<void> _testEt() async {
     final check = await MikroService.checkConnection();
 
-      if (check) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Bağlantı başarılı")),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Bağlantı başarısız")),
-        );
-      }
+    if (check) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Bağlantı başarılı")));
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Bağlantı başarısız")));
+    }
 
     setState(() => _loading = true);
     await Future.delayed(const Duration(seconds: 1));
@@ -114,7 +147,7 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
         _kullaniciCtrl.text = data.kullanici ?? "";
         _sifreCtrl.text = data.non_hashed_password; // HASH geri basılmaz
         _apiKeyCtrl.text = data.apiKey ?? "";
-        _firmaNoCtrl.text = data.firmaNo ?? "";
+        //_firmaNoCtrl.text = data.firmaNo ?? "";
         _subeNoCtrl.text = data.subeNo ?? ""; // tablo yoksa boş bırak
       }
     } catch (e) {
@@ -221,8 +254,6 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
     _gap(),
     _passwordInput(),
     _gap(),
-    _inputRow("Firma No", _firmaNoCtrl, isNumber: true),
-    _gap(),
     SizedBox(width: 60),
     _inputRow("API Key", _apiKeyCtrl, maxLength: 255),
     _gap(),
@@ -250,8 +281,7 @@ class _MikroApiSettingsScreenState extends State<MikroApiSettingsScreen> {
       _passwordInput(),
     ),
     _row(
-      _inputRow("Firma No", _firmaNoCtrl, isNumber: true),
-      _inputRow("API Key", _apiKeyCtrl, maxLength: 255),
+      _inputRow("API Key", _apiKeyCtrl, maxLength: 255), const SizedBox(),
     ),
     _row(_inputRow("Şube No", _subeNoCtrl, isNumber: true), const SizedBox()),
   ];

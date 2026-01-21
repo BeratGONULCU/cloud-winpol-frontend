@@ -8,7 +8,8 @@ import 'package:cloud_winpol_frontend/service/mikro_connection_service.dart';
 import 'package:http/http.dart' as http;
 
 class CompanyService {
-  static const String baseUrl = "http://localhost:8000";
+  //static const String baseUrl = "http://localhost:8000";
+  static const String baseUrl = "http://37.27.204.97:8000";
 
   static Future<Map<String, dynamic>> createCustomer({
     required String vergiNo,
@@ -22,7 +23,7 @@ class CompanyService {
       "&company_code=${Uri.encodeComponent(companyCode)}",
     );
 
-    final response = await ApiClient.post(url);
+    final response = await ApiClient.post(url, headers: {});
 
     if (response.statusCode == 401) {
       throw Exception("Unauthorized – token gönderilmedi");
@@ -119,7 +120,7 @@ class CompanyService {
       "$baseUrl/admin/firm-init",
     ).replace(queryParameters: queryParams);
 
-    final response = await ApiClient.post(uri);
+    final response = await ApiClient.post(uri, headers: {});
 
     if (response.statusCode == 401) {
       throw Exception("Unauthorized – token gönderilmedi");
